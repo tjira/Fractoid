@@ -9,27 +9,27 @@ zIm = zReTemp * (zIm + zIm) - 0.5 * zImPrev; \
 zRePrev = zReTemp; \
 zImPrev = zImTemp
 
-Phoenix::Phoenix(int iters, int bailout) : Complex<Phoenix>(iters, bailout) {}
+Phoenix::Phoenix(int iters, int bail) : Complex<Phoenix>(iters, bail) {}
 
 double Phoenix::dist(double pRe, double pIm, double &zMag, int trap) const {
-	double zRe = -pIm, zIm = pRe, zRePrev = CRe, zImPrev = CIm, zReTemp, zImTemp, value = 100;
+	double zRe = -pIm, zIm = pRe, zRePrev = aRe, zImPrev = aIm, zReTemp, zImTemp, val = 100;
 	for (int n = 0; n < iters; n++) {
 		PHOENIX;
-		if (zMag = MAG(zRe, zIm), zMag > bailout * bailout) {
+		if (zMag = MAG(zRe, zIm), zMag > bail * bail) {
 			break;
-		} else if (double dist = distance(zRe, zIm, zMag, trap); dist < value) {
-			value = dist;
+		} else if (double dist = distance(zRe, zIm, zMag, trap); dist < val) {
+			val = dist;
 		}
 	}
-	return value;
+	return val;
 }
 
 int Phoenix::eta(double pRe, double pIm, double &zMag) const {
-	double zRe = -pIm, zIm = pRe, zRePrev = CRe, zImPrev = CIm, zReTemp, zImTemp;
-	for (int value = 0; value < iters; value++) {
+	double zRe = -pIm, zIm = pRe, zRePrev = aRe, zImPrev = aIm, zReTemp, zImTemp;
+	for (int val = 0; val < iters; val++) {
 		PHOENIX;
-		if (zMag = MAG(zRe, zIm), zMag > bailout * bailout) {
-			return value;
+		if (zMag = MAG(zRe, zIm), zMag > bail * bail) {
+			return val;
 		}
 	}
 	return iters;
@@ -37,10 +37,10 @@ int Phoenix::eta(double pRe, double pIm, double &zMag) const {
 
 std::vector<std::vector<double>> Phoenix::orbit(double pRe, double pIm, double &zMag) const {
 	std::vector<std::vector<double>> orbit;
-	double zRe = -pIm, zIm = pRe, zRePrev = CRe, zImPrev = CIm, zReTemp, zImTemp;
+	double zRe = -pIm, zIm = pRe, zRePrev = aRe, zImPrev = aIm, zReTemp, zImTemp;
 	for (int n = 0; n < iters; n++) {
 		PHOENIX;
-		if (zMag = MAG(zRe, zIm), zMag > bailout * bailout) {
+		if (zMag = MAG(zRe, zIm), zMag > bail * bail) {
 			return orbit;
 		}
 		orbit.push_back({zRe, zIm});
@@ -48,7 +48,7 @@ std::vector<std::vector<double>> Phoenix::orbit(double pRe, double pIm, double &
 	return std::vector<std::vector<double>>{};
 }
 
-void Phoenix::params(double CReIn, double CImIn) {
-	CRe = CReIn;
-	CIm = CImIn;
+void Phoenix::params(double aReIn, double aImIn) {
+	aRe = aReIn;
+	aIm = aImIn;
 }

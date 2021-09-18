@@ -5,95 +5,92 @@
 template<class F>
 Complex<F>::Complex(int iters, int bailout) {
 	this->iters = iters;
-	this->bailout = bailout;
+	this->bail = bailout;
 }
 
 template<class F>
-F Complex<F>::copy(int bailoutIn, int itersIn) const {
+F Complex<F>::copy(int itersIn, int bailoutIn) const {
 	return F(itersIn, bailoutIn);
 }
 
 template<class F>
-void Complex<F>::density(Image &image, double centerRe, double centerIm, double zoom, const Algorithm &alg) const {
-	int width = image.resolution()[0], height = image.resolution()[1];
-	double reMin = centerRe - 1.5 * width / height, reMax = centerRe + 1.5 * width / height;
-	double imMin = -centerIm - 1.5, imMax = -centerIm + 1.5;
+void Complex<F>::density(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const {
 	std::mt19937 twister(alg.seed);
-	std::uniform_real_distribution<double> real(reMin, reMax);
-	std::uniform_real_distribution<double> imag(imMin, imMax);
-	for (int index = 0; index < alg.channels; index++) {
-		F fractal = copy(bailout, iters * (alg.channels == 1 ? 1 : pow(10, 2 - index)));
-		std::vector<unsigned int> channel(4 * width * height);
-		#pragma omp parallel for
+	std::uniform_real_distribution<double> real(cRe - 1.5 * img.ratio, cRe + 1.5 * img.ratio);
+	std::uniform_real_distribution<double> imag(-cIm - 1.5, -cIm + 1.5);
+	for (int index = 0; index < alg.layers; index++) {
+		F fractal = copy(iters * (alg.layers == 1 ? 1 : pow(10, 2 - index)), bail);
+		std::vector<unsigned int> layer(4 * img.w * img.h);
+		#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, twister, real, imag, fractal, index, layer)
 		for (int sample = 0; sample < alg.samples; sample++) {
-			double zMag; std::vector<std::vector<double>> points = fractal.orbit(real(twister), imag(twister), zMag);
-			for (auto &point : points) {
-				if (point[0] < reMin || point[0] > reMax || point[1] < imMin || point[1] > imMax) continue;
-				int i = int(((point[1] + centerIm) * height * zoom + 1.5 * height) / 3.0);
-				int j = int(((point[0] - centerRe) * height * zoom + 1.5 * width) / 3.0);
-				channel[4 * width * i + 4 * j + index]++;
-				if (alg.channels == 1) {
-					channel[4 * width * i + 4 * j + 1]++;
-					channel[4 * width * i + 4 * j + 2]++;
+			double zMag; std::vector<std::vector<double>> ps = fractal.orbit(real(twister), imag(twister), zMag);
+			for (auto &p : ps) {
+				if (p[0] < real.a() || p[0] > real.b() || p[1] < imag.a() || p[1] > imag.b()) continue;
+				int i = int(((p[1] + cIm) * img.h * z + 1.5 * img.h) / 3.0);
+				int j = int(((p[0] - cRe) * img.h * z + 1.5 * img.w) / 3.0);
+				layer[4 * img.w * i + 4 * j + index]++;
+				if (alg.layers == 1) {
+					layer[4 * img.w * i + 4 * j + 1]++;
+					layer[4 * img.w * i + 4 * j + 2]++;
 				}
 			}
 		}
-		double max = *std::max_element(channel.begin(), channel.end());
+		double max = *std::max_element(layer.begin(), layer.end());
 		if (max != 255) {
-			for(unsigned int &value : channel) {
-				value = (unsigned int) (value / max * 255);
+			for(unsigned int &val : layer) {
+				val = (unsigned int) (val / max * 255);
 			}
 		}
-		image.add(std::vector<unsigned char>(channel.begin(), channel.end()));
+		img.add(std::vector<unsigned char>(layer.begin(), layer.end()));
 	}
 }
 
 template<class F>
-void Complex<F>::normal(Image &image, double centerRe, double centerIm, double zoom, const Algorithm &alg) const {
-	int width = image.resolution()[0], height = image.resolution()[1]; double scale = 1.0 / zoom / height;
-	#pragma omp parallel for default(none) shared(image, centerRe, centerIm, zoom, alg, width, height, scale)
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			double pRe = centerRe - (1.5 * width - 3 * j) * scale;
-			double pIm = -centerIm - (1.5 * height - 3 * i) * scale;
-			double zMag; double value = alg.algorithm == 3 ? dist(pRe, pIm, zMag, alg.trap) : eta(pRe, pIm, zMag);
-			unsigned char r = alg.inside[0], g = alg.inside[1], b = alg.inside[2];
-			if (zMag > bailout * bailout || !alg.fill) {
-				if (alg.smooth && zMag > bailout * bailout) {
-					value += 1.44269504f * log(2.0 * log(bailout) / log(zMag));
-				}
-				switch (alg.algorithm) {
+void Complex<F>::normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const {
+	double scale = 1.0 / z / img.h;
+	#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, scale)
+	for (int i = 0; i < img.h; i++) {
+		for (int j = 0; j < img.w; j++) {
+			double pRe = cRe - (1.5 * img.w - 3 * j) * scale;
+			double pIm = -cIm - (1.5 * img.h - 3 * i) * scale;
+			double zMag; double val = alg.alg == 3 ? dist(pRe, pIm, zMag, alg.trap) : eta(pRe, pIm, zMag);
+			unsigned char r = alg.in[0], g = alg.in[1], b = alg.in[2];
+			if (zMag > bail * bail || !alg.fill) {
+				switch (alg.alg) {
 					case 1: solid:
-						r = alg.outside[0];
-						g = alg.outside[1];
-						b = alg.outside[2];
+						r = alg.out[0];
+						g = alg.out[1];
+						b = alg.out[2];
 						break;
 					case 2: trig:
-						r = (unsigned char) ((sin(alg.randomizer[0] * value + alg.randomizer[1]) + 1) * 127.5);
-						g = (unsigned char) ((sin(alg.randomizer[2] * value + alg.randomizer[3]) + 1) * 127.5);
-						b = (unsigned char) ((sin(alg.randomizer[3] * value + alg.randomizer[5]) + 1) * 127.5);
+						if (alg.smooth && zMag > bail * bail) {
+							val += 1.44269504f * log(2.0 * log(bail) / log(zMag));
+						}
+						r = (unsigned char) ((sin(alg.rnd[0] * val + alg.rnd[1]) + 1) * 127.5);
+						g = (unsigned char) ((sin(alg.rnd[2] * val + alg.rnd[3]) + 1) * 127.5);
+						b = (unsigned char) ((sin(alg.rnd[3] * val + alg.rnd[5]) + 1) * 127.5);
 						break;
 					case 3:
-						value = log(ABS((value)));
+						val = log(ABS((val)));
 						goto trig;
 					default:
 						goto solid;
 				}
 			}
-			image.set(i, j, r, g, b);
+			img.set(i, j, r, g, b);
 		}
 	}
 }
 
 template<class F>
-Image Complex<F>::paint(double centerRe, double centerIm, double zoom, const Algorithm &alg, int width, int height) const {
-	Image image(width, height);
-	if (alg.algorithm == 1 || alg.algorithm == 2 || alg.algorithm == 3) {
-		normal(image, centerRe, centerIm, zoom, alg);
+Image Complex<F>::paint(double cRe, double cIm, double z, const Algorithm &alg, int w, int h) const {
+	Image image(w, h);
+	if (alg.alg == 1 || alg.alg == 2 || alg.alg == 3) {
+		normal(image, cRe, cIm, z, alg);
 	}
-	else if (alg.algorithm == 4) {
+	else if (alg.alg == 4) {
 		image.fill(0, 0, 0);
-		density(image, centerRe, centerIm, zoom, alg);
+		density(image, cRe, cIm, z, alg);
 	}
 	return image;
 }

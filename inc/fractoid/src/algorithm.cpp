@@ -4,11 +4,11 @@
 
 Algorithm Algorithm::density(int channels, int samples, int seed) {
 	if (channels != 1 && channels != 3) {
-		throw std::runtime_error("Invalid number of channels.");
+		throw std::runtime_error("Invalid number of layers.");
 	}
 	return Algorithm{
-		.algorithm = 4,
-		.channels = channels,
+		.alg = 4,
+		.layers = channels,
 		.samples = samples,
 		.seed = seed,
 	};
@@ -16,32 +16,32 @@ Algorithm Algorithm::density(int channels, int samples, int seed) {
 
 Algorithm Algorithm::periodic(bool smooth, int seed) {
 	return {
-		.algorithm = 2,
+		.alg = 2,
 		.smooth = smooth,
 		.seed = seed,
-		.randomizer = Algorithm::randomize(seed),
+		.rnd = Algorithm::randomize(seed),
 	};
 }
 
 Algorithm Algorithm::orbitrap(int trap, int seed) {
 	return Algorithm{
-		.algorithm = 3,
+		.alg = 3,
 		.trap = trap,
 		.seed = seed,
-		.randomizer = Algorithm::randomize(seed),
+		.rnd = Algorithm::randomize(seed),
 	};
 }
 
 Algorithm Algorithm::solid(const std::vector<unsigned char> &outside) {
 	return Algorithm{
-		.algorithm = 1,
-		.outside = outside,
+		.alg = 1,
+		.out = outside,
 	};
 }
 
 void Algorithm::color(const std::vector<unsigned char> &insideIn) {
 	fill = true;
-	inside = insideIn;
+	in = insideIn;
 }
 
 std::vector<double> Algorithm::randomize(int seed) {

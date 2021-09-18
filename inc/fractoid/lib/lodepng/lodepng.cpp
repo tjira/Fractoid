@@ -409,7 +409,7 @@ unsigned lodepng_save_file(const unsigned char* buffer, size_t buffersize, const
 
 typedef struct {
   ucvector* data;
-  unsigned char bp; /*ok to overflow, indicates bit pos inside byte*/
+  unsigned char bp; /*ok to overflow, indicates bit pos in byte*/
 } LodePNGBitWriter;
 
 static void LodePNGBitWriter_init(LodePNGBitWriter* writer, ucvector* data) {
@@ -1234,7 +1234,7 @@ static unsigned getTreeInflateDynamic(HuffmanTree* tree_ll, HuffmanTree* tree_d,
       /*check if any of the ensureBits above went out of bounds*/
       if(reader->bp > reader->bitsize) {
         /*return error code 10 or 11 depending on the situation that happened in huffmanDecodeSymbol
-        (10=no endcode, 11=wrong jump outside of tree)*/
+        (10=no endcode, 11=wrong jump out of tree)*/
         /* TODO: revise error codes 10,11,50: the above comment is no longer valid */
         ERROR_BREAK(50); /*error, bit pointer jumps past memory*/
       }
@@ -1338,7 +1338,7 @@ static unsigned inflateHuffmanBlock(ucvector* out, LodePNGBitReader* reader,
     /*check if any of the ensureBits above went out of bounds*/
     if(reader->bp > reader->bitsize) {
       /*return error code 10 or 11 depending on the situation that happened in huffmanDecodeSymbol
-      (10=no endcode, 11=wrong jump outside of tree)*/
+      (10=no endcode, 11=wrong jump out of tree)*/
       /* TODO: revise error codes 10,11,50: the above comment is no longer valid */
       ERROR_BREAK(51); /*error, bit pointer jumps past memory*/
     }
@@ -1375,7 +1375,7 @@ static unsigned inflateNoCompression(ucvector* out, LodePNGBitReader* reader,
   if(!ucvector_resize(out, out->size + LEN)) return 83; /*alloc fail*/
 
   /*read the literal data: LEN bytes are now stored in the out buffer*/
-  if(bytepos + LEN > size) return 23; /*error: reading outside of in buffer*/
+  if(bytepos + LEN > size) return 23; /*error: reading out of in buffer*/
 
   lodepng_memcpy(out->data + out->size - LEN, reader->data + bytepos, LEN);
   bytepos += LEN;
@@ -2627,7 +2627,7 @@ unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize,
 }
 
 /* ////////////////////////////////////////////////////////////////////////// */
-/* / Color types, channels, bits                                            / */
+/* / Color types, layers, bits                                            / */
 /* ////////////////////////////////////////////////////////////////////////// */
 
 /*checks if the colortype is valid and the bitdepth bd is allowed for this colortype.
@@ -2658,7 +2658,7 @@ static unsigned getNumColorChannels(LodePNGColorType colortype) {
 }
 
 static unsigned lodepng_get_bpp_lct(LodePNGColorType colortype, unsigned bitdepth) {
-  /*bits per pixel is amount of channels * bits per channel*/
+  /*bits per pixel is amount of layers * bits per channel*/
   return getNumColorChannels(colortype) * bitdepth;
 }
 
@@ -3250,7 +3250,7 @@ static void rgba16ToPixel(unsigned char* out, size_t i,
   }
 }
 
-/*Get RGBA8 color of pixel with index i (y * width + x) from the raw image with given color type.*/
+/*Get RGBA8 color of pixel with index i (y * w + x) from the raw image with given color type.*/
 static void getPixelColorRGBA8(unsigned char* r, unsigned char* g,
                                unsigned char* b, unsigned char* a,
                                const unsigned char* in, size_t i,
@@ -3321,7 +3321,7 @@ static void getPixelColorRGBA8(unsigned char* r, unsigned char* g,
   }
 }
 
-/*Similar to getPixelColorRGBA8, but with all the for loops inside of the color
+/*Similar to getPixelColorRGBA8, but with all the for loops in of the color
 mode test cases, optimized to convert the colors much faster, when converting
 to the common case of RGBA with 8 bit per channel. buffer must be RGBA with
 enough memory.*/
@@ -3493,7 +3493,7 @@ static void getPixelColorsRGB8(unsigned char* LODEPNG_RESTRICT buffer, size_t nu
   }
 }
 
-/*Get RGBA16 color of pixel with index i (y * width + x) from the raw image with
+/*Get RGBA16 color of pixel with index i (y * w + x) from the raw image with
 given color type, but the given color type must be 16-bit itself.*/
 static void getPixelColorRGBA16(unsigned short* r, unsigned short* g, unsigned short* b, unsigned short* a,
                                 const unsigned char* in, size_t i, const LodePNGColorMode* mode) {
@@ -3989,15 +3989,15 @@ static const unsigned ADAM7_DY[7] = { 8, 8, 8, 4, 4, 2, 2 }; /*y delta values*/
 
 /*
 Outputs various dimensions and positions in the image related to the Adam7 reduced images.
-passw: output containing the width of the 7 passes
-passh: output containing the height of the 7 passes
+passw: output containing the w of the 7 passes
+passh: output containing the h of the 7 passes
 filter_passstart: output containing the index of the start and end of each
  reduced image with filter bytes
 padded_passstart output containing the index of the start and end of each
  reduced image when without filter bytes but with padded scanlines
 passstart: output containing the index of the start and end of each reduced
  image without padding between scanlines, but still padding between the images
-w, h: width and height of non-interlaced image
+w, h: w and h of non-interlaced image
 bpp: bits per pixel
 "padded" is only relevant if bpp is less than 8 and a scanline or image does not
  end at a full byte
@@ -4007,7 +4007,7 @@ static void Adam7_getpassvalues(unsigned passw[7], unsigned passh[7], size_t fil
   /*the passstart values have 8 values: the 8th one indicates the byte after the end of the 7th (= last) pass*/
   unsigned i;
 
-  /*calculate width and height in pixels of each pass*/
+  /*calculate w and h in pixels of each pass*/
   for(i = 0; i != 7; ++i) {
     passw[i] = (w + ADAM7_DX[i] - ADAM7_IX[i] - 1) / ADAM7_DX[i];
     passh[i] = (h + ADAM7_DY[i] - ADAM7_IY[i] - 1) / ADAM7_DY[i];
@@ -4064,7 +4064,7 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h, LodePNGState* state,
   /*read the values given in the header*/
   width = lodepng_read32bitInt(&in[16]);
   height = lodepng_read32bitInt(&in[20]);
-  /*TODO: remove the undocumented feature that allows to give null pointers to width or height*/
+  /*TODO: remove the undocumented feature that allows to give null pointers to w or h*/
   if(w) *w = width;
   if(h) *h = height;
   info->color.bitdepth = in[24];
@@ -4242,7 +4242,7 @@ static unsigned unfilter(unsigned char* out, const unsigned char* in, unsigned w
 
   /*bytewidth is used for filtering, is 1 when bpp < 8, number of bytes per pixel otherwise*/
   size_t bytewidth = (bpp + 7u) / 8u;
-  /*the width of a scanline in bytes, not including the filter type*/
+  /*the w of a scanline in bytes, not including the filter type*/
   size_t linebytes = lodepng_get_raw_size_idat(w, 1, bpp) - 1u;
 
   for(y = 0; y < h; ++y) {
@@ -5135,8 +5135,8 @@ static unsigned addChunk_IHDR(ucvector* out, unsigned w, unsigned h,
   CERROR_TRY_RETURN(lodepng_chunk_init(&chunk, out, 13, "IHDR"));
   data = chunk + 8;
 
-  lodepng_set32bitInt(data + 0, w); /*width*/
-  lodepng_set32bitInt(data + 4, h); /*height*/
+  lodepng_set32bitInt(data + 0, w); /*w*/
+  lodepng_set32bitInt(data + 4, h); /*h*/
   data[8] = (unsigned char)bitdepth; /*bit depth*/
   data[9] = (unsigned char)colortype; /*color type*/
   data[10] = 0; /*compression method*/
@@ -5155,7 +5155,7 @@ static unsigned addChunk_PLTE(ucvector* out, const LodePNGColorMode* info) {
   CERROR_TRY_RETURN(lodepng_chunk_init(&chunk, out, info->palettesize * 3, "PLTE"));
 
   for(i = 0; i != info->palettesize; ++i) {
-    /*add all channels except alpha channel*/
+    /*add all layers except alpha channel*/
     chunk[j++] = info->palette[i * 4 + 0];
     chunk[j++] = info->palette[i * 4 + 1];
     chunk[j++] = info->palette[i * 4 + 2];
@@ -5483,7 +5483,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
   */
 
   unsigned bpp = lodepng_get_bpp(color);
-  /*the width of a scanline in bytes, not including the filter type*/
+  /*the w of a scanline in bytes, not including the filter type*/
   size_t linebytes = lodepng_get_raw_size_idat(w, 1, bpp) - 1u;
 
   /*bytewidth is used for filtering, is 1 when bpp < 8, number of bytes per pixel otherwise*/
@@ -6174,7 +6174,7 @@ const char* lodepng_error_text(unsigned code) {
     case 0: return "no error, everything went ok";
     case 1: return "nothing done yet"; /*the Encoder/Decoder has done nothing yet, error checking makes no sense yet*/
     case 10: return "end of input memory reached without huffman end code"; /*while huffman decoding*/
-    case 11: return "error in code tree made it jump outside of huffman tree"; /*while huffman decoding*/
+    case 11: return "error in code tree made it jump out of huffman tree"; /*while huffman decoding*/
     case 13: return "problem while processing dynamic deflate block";
     case 14: return "problem while processing dynamic deflate block";
     case 15: return "problem while processing dynamic deflate block";
@@ -6265,7 +6265,7 @@ const char* lodepng_error_text(unsigned code) {
     case 90: return "windowsize must be a power of two";
     case 91: return "invalid decompressed idat size";
     case 92: return "integer overflow due to too many pixels";
-    case 93: return "zero width or height is invalid";
+    case 93: return "zero w or h is invalid";
     case 94: return "header chunk must have a size of 13 bytes";
     case 95: return "integer overflow with combined idat chunk size";
     case 96: return "invalid gAMA chunk size";

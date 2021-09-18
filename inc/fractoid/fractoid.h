@@ -13,41 +13,42 @@ struct Algorithm {
 	static Algorithm orbitrap(int trap, int seed = 1);
 	static Algorithm solid(const std::vector<unsigned char> &outside);
 	void color(const std::vector<unsigned char> &insideIn);
-	int algorithm; bool fill, smooth; int trap, channels, samples, seed;
-	std::vector<unsigned char> inside = {0, 0, 0}, outside; std::vector<double> randomizer;
+	int alg; bool fill, smooth; int trap, layers, samples, seed;
+	std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> rnd;
 
 private:
 	static std::vector<double> randomize(int seed);
 };
 
 class Image {
+	template<class>
+	friend class Complex;
 public:
-	Image(int width, int height);
+	Image(int w, int h);
 	[[nodiscard]] unsigned int save(const std::string &filename) const;
 	void add(std::vector<unsigned char> canvasIn);
-	[[nodiscard]] std::vector<int> resolution() const;
 	void set(int i, int j, unsigned char r, unsigned char g, unsigned char b);
 	void fill(unsigned char r, unsigned char g, unsigned char b);
 	void brightness(double value);
 
 private:
-	int width, height; std::vector<unsigned char> canvas;
+	int w, h; double ratio; std::vector<unsigned char> canvas;
 };
 
 template<class F>
 class Complex {
 public:
-	[[nodiscard]] F copy(int bailoutIn, int itersIn) const;
-	[[nodiscard]] Image paint(double centerRe, double centerIm, double zoom, const Algorithm &col, int width = 1920, int height = 1080) const;
+	[[nodiscard]] F copy(int itersIn, int bailoutIn) const;
+	[[nodiscard]] Image paint(double cRe, double cIm, double z, const Algorithm &alg, int w=1920, int h=1080) const;
 	virtual void params(double CReIn, double CImIn);
 
 protected:
 	Complex(int iters, int bailout);
-	int bailout = 5, iters = 100;
+	int bail = 5, iters = 100;
 
 private:
-	void density(Image &image, double centerRe, double centerIm, double zoom, const Algorithm &col) const;
-	void normal(Image &image, double centerRe, double centerIm, double zoom, const Algorithm &col) const;
+	void density(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const;
+	void normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const;
 	virtual double dist(double pRe, double pIm, double &zMag, int trap) const;
 	virtual int eta(double pRe, double pIm, double &zMag) const;
 	[[nodiscard]] virtual std::vector<std::vector<double>> orbit(double pRe, double pIm, double &zMag) const;
@@ -56,7 +57,7 @@ private:
 class BurningShip : public Complex<BurningShip> {
 	friend class Complex;
 public:
-	BurningShip(int iters, int bailout);
+	BurningShip(int iters, int bail);
 
 private:
 	double dist(double pRe, double pIm, double &zMag, int trap) const override;
@@ -67,20 +68,20 @@ private:
 class Julia : public Complex<Julia> {
 	friend class Complex;
 public:
-	Julia(int iters, int bailout);
-	void params(double CReIn, double CImIn) override;
+	Julia(int iters, int bail);
+	void params(double aReIn, double aImIn) override;
 
 private:
 	double dist(double pRe, double pIm, double &zMag, int trap) const override;
 	int eta(double pRe, double pIm, double &zMag) const override;
 	[[nodiscard]] std::vector<std::vector<double>> orbit(double pRe, double pIm, double &zMag) const override;
-	double CRe = 0, CIm = 1;
+	double aRe = 0, aIm = 1;
 };
 
 class Mandelbrot : public Complex<Mandelbrot> {
 	friend class Complex;
 public:
-	Mandelbrot(int iters, int bailout);
+	Mandelbrot(int iters, int bail);
 
 private:
 	double dist(double pRe, double pIm, double &zMag, int trap) const override;
@@ -91,7 +92,7 @@ private:
 class Manowar : public Complex<Manowar> {
 	friend class Complex;
 public:
-	Manowar(int iters, int bailout);
+	Manowar(int iters, int bail);
 
 private:
 	double dist(double pRe, double pIm, double &zMag, int trap) const override;
@@ -102,12 +103,12 @@ private:
 class Phoenix : public Complex<Phoenix> {
 	friend class Complex;
 public:
-	Phoenix(int iters, int bailout);
-	void params(double CReIn, double CImIn) override;
+	Phoenix(int iters, int bail);
+	void params(double aReIn, double aImIn) override;
 
 private:
 	double dist(double pRe, double pIm, double &zMag, int trap) const override;
 	int eta(double pRe, double pIm, double &zMag) const override;
 	[[nodiscard]] std::vector<std::vector<double>> orbit(double pRe, double pIm, double &zMag) const override;
-	double CRe = 0, CIm = 0;
+	double aRe = 0, aIm = 0;
 };

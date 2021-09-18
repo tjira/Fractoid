@@ -118,8 +118,8 @@ out: Output parameter. Pointer to buffer that will contain the raw pixel data.
      initially. Bytes per pixel depends on colortype and bitdepth.
      Must be freed after usage with free(*out).
      Note: for 16-bit per channel colors, uses big endian format like PNG does.
-w: Output parameter. Pointer to width of pixel data.
-h: Output parameter. Pointer to height of pixel data.
+w: Output parameter. Pointer to w of pixel data.
+h: Output parameter. Pointer to h of pixel data.
 in: Memory buffer with the PNG file.
 insize: size of the in buffer.
 colortype: the desired color type for the raw output image. See explanation on PNG color types.
@@ -177,8 +177,8 @@ out: Output parameter. Pointer to buffer that will contain the PNG image data.
 outsize: Output parameter. Pointer to the size in bytes of the out buffer.
 image: The raw pixel data to encode. The size of this buffer should be
        w * h * (bytes per pixel), bytes per pixel depends on colortype and bitdepth.
-w: width of the raw pixel data in pixels.
-h: height of the raw pixel data in pixels.
+w: w of the raw pixel data in pixels.
+h: h of the raw pixel data in pixels.
 colortype: the color type of the raw input image. See explanation on PNG color types.
 bitdepth: the bit depth of the raw input image. See explanation on PNG color types.
 Return value: LodePNG error code (0 means no error).
@@ -372,7 +372,7 @@ typedef struct LodePNGColorMode {
   then lodepng_palette_add per color to correctly modify it (to ensure size
   of exactly 1024 bytes).
 
-  The alpha channels must be set as well, initialize them to 255 for opaque images.
+  The alpha layers must be set as well, initialize them to 255 for opaque images.
 
   When decoding, by default you can ignore this palette, since LodePNG already
   fills the palette colors in the pixels of the raw RGBA output.
@@ -414,7 +414,7 @@ unsigned lodepng_palette_add(LodePNGColorMode* info,
 
 /*get the total amount of bits per pixel, based on colortype and bitdepth in the struct*/
 unsigned lodepng_get_bpp(const LodePNGColorMode* info);
-/*get the amount of color channels used, based on colortype in the struct.
+/*get the amount of color layers used, based on colortype in the struct.
 If a palette is used, it counts as 1 channel.*/
 unsigned lodepng_get_channels(const LodePNGColorMode* info);
 /*is it a grayscale type? (only colortype 0 or 4)*/
@@ -434,7 +434,7 @@ In detail, it returns true only if it's a color type with alpha, or has a palett
 or if "key_defined" is true.
 */
 unsigned lodepng_can_have_alpha(const LodePNGColorMode* info);
-/*Returns the byte size of a raw image buffer with given width, height and color mode*/
+/*Returns the byte size of a raw image buffer with given w, h and color mode*/
 size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color);
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
@@ -449,7 +449,7 @@ typedef struct LodePNGTime {
 } LodePNGTime;
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 
-/*Information about the PNG image, except pixels, width and height.*/
+/*Information about the PNG image, except pixels, w and h.*/
 typedef struct LodePNGInfo {
   /*header (IHDR), palette (PLTE) and transparency (tRNS) chunks*/
   unsigned compression_method;/*compression method of the original file. Always 0.*/
@@ -815,7 +815,7 @@ unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
 
 /*
 Read the PNG header, but not the actual data. This returns only the information
-that is in the IHDR chunk of the PNG, such as width, height and color type. The
+that is in the IHDR chunk of the PNG, such as w, h and color type. The
 information is placed in the info_png field of the LodePNGState.
 */
 unsigned lodepng_inspect(unsigned* w, unsigned* h,
@@ -1207,7 +1207,7 @@ The following features are supported by the decoder:
 *) encoding of PNGs, from any raw image to 24- or 32-bit color, or the same color type as the raw image
 *) Adam7 interlace and deinterlace for any color type
 *) loading the image from harddisk or decoding it from a buffer from other sources than harddisk
-*) support for alpha channels, including RGBA color model, translucent palettes and color keying
+*) support for alpha layers, including RGBA color model, translucent palettes and color keying
 *) zlib decompression (inflate)
 *) zlib compression (deflate)
 *) CRC32 and ADLER32 checksums
@@ -1302,7 +1302,7 @@ LodePNGInfo info_png
 --------------------
 
 After decoding, this contains extra information of the PNG image, except the actual
-pixels, width and height because these are already gotten directly from the decoder
+pixels, w and h because these are already gotten directly from the decoder
 functions.
 
 It contains for example the original color type of the PNG image, text comments,
@@ -1422,8 +1422,8 @@ It can convert from almost any color type to any other color type, except the
 following conversions: RGB to grayscale is not supported, and converting to a
 palette when the palette doesn't have a required color is not supported. This is
 not supported on purpose: this is information loss which requires a color
-reduction algorithm that is beyond the scope of a PNG encoder (yes, RGB to gray
-is easy, but there are multiple ways if you want to give some channels more
+reduction alg that is beyond the scope of a PNG encoder (yes, RGB to gray
+is easy, but there are multiple ways if you want to give some layers more
 weight).
 
 By default, when decoding, you get the raw image in 32-bit RGBA or 24-bit RGB
@@ -1450,7 +1450,7 @@ The PNG specification gives the following color types:
 6: RGBA, bit depths 8 and 16
 
 Bit depth is the amount of bits per pixel per color channel. So the total amount
-of bits per pixel is: amount of channels * bitdepth.
+of bits per pixel is: amount of layers * bitdepth.
 
 6.2. color conversions
 ----------------------
@@ -1502,7 +1502,7 @@ it.
 Non supported color conversions:
 -color to grayscale when non-gray pixels are present: no error is thrown, but
 the result will look ugly because only the red channel is taken (it assumes all
-three channels are the same in this case so ignores green and blue). The reason
+three layers are the same in this case so ignores green and blue). The reason
 no error is given is to allow converting from three-channel grayscale images to
 one-channel even if there are numerical imprecisions.
 -anything to palette when the palette does not have an exact match for a from-color
@@ -1530,7 +1530,7 @@ In the PNG file format, if a less than 8-bit per pixel color type is used and th
 have a bit amount that isn't a multiple of 8, then padding bits are used so that each
 scanline starts at a fresh byte. But that is NOT true for the LodePNG raw input and output.
 The raw input image you give to the encoder, and the raw output image you get from the decoder
-will NOT have these padding bits, e.g. in the case of a 1-bit image with a width
+will NOT have these padding bits, e.g. in the case of a 1-bit image with a w
 of 7 pixels, the first pixel of the second scanline will the 8th bit of the first byte,
 not the first bit of a new byte.
 
@@ -1546,7 +1546,7 @@ LodePNG always uses big endian because the PNG file format does so internally.
 Conversions to other formats than PNG uses internally are not supported by
 LodePNG on purpose, there are myriads of formats, including endianness of 16-bit
 colors, the order in which you store R, G, B and A, and so on. Supporting and
-converting to/from all that is outside the scope of LodePNG.
+converting to/from all that is out the scope of LodePNG.
 
 This may mean that, depending on your use case, you may want to convert the big
 endian output of LodePNG to little endian with a for loop. This is certainly not
@@ -1759,8 +1759,8 @@ int main(int argc, char *argv[]) {
 
   //load and decode
   std::vector<unsigned char> image;
-  unsigned width, height;
-  unsigned error = lodepng::decode(image, width, height, filename);
+  unsigned w, h;
+  unsigned error = lodepng::decode(image, w, h, filename);
 
   //if there's an error, display it
   if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
@@ -1776,10 +1776,10 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   unsigned error;
   unsigned char* image;
-  size_t width, height;
+  size_t w, h;
   const char* filename = argc > 1 ? argv[1] : "test.png";
 
-  error = lodepng_decode32_file(&image, &width, &height, filename);
+  error = lodepng_decode32_file(&image, &w, &h, filename);
 
   if(error) printf("decoder error %u: %s\n", error, lodepng_error_text(error));
 
@@ -1980,7 +1980,7 @@ https://github.com/lvandeve/lodepng
 *) 09 okt 2006: Encoder class added. It encodes a valid PNG image from the
     given image buffer, however for now it's not compressed.
 *) 08 sep 2006: (!) Changed to interface with a Decoder class
-*) 30 jul 2006: (!) LodePNG_InfoPng , width and height are now retrieved in different
+*) 30 jul 2006: (!) LodePNG_InfoPng , w and h are now retrieved in different
     way. Renamed decodePNG to decodePNGGeneric.
 *) 29 jul 2006: (!) Changed the interface: image info is now returned as a
     struct of type LodePNG::LodePNG_Info, instead of a vector, which was a bit clumsy.
