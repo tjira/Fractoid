@@ -5,9 +5,8 @@ command line interface.
 
 ## Installation
 
-Before the standalone executable, the library must be compiled. Navigate to the project folder and run `cmake .`
-followed by `make fractoid`. Now that the library has been compiled you can compile the executable by running `make`
-in the project folder. Both binaries will be compiled into the `bin` folder.
+To compile the library along with the executable, navigate to the project folder and run `cmake .`
+followed by `make`. Both binaries will be compiled into the `bin` folder.
 
 ## Usage
 
