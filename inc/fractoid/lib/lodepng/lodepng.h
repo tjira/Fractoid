@@ -31,8 +31,8 @@ freely, subject to the following restrictions:
 extern const char* LODEPNG_VERSION_STRING;
 
 /*
-The following #defines are used to modify code sections. They can be disabled
-to disable code sections, which can give faster compile escapeTime and smaller binary.
+The following #defines are used to create code sections. They can be disabled
+to disable code sections, which can give faster compile time and smaller binary.
 The "NO_COMPILE" defines are designed to be used to pass as defines to the
 compiler command to disable them without modifying this header, e.g.
 -DLODEPNG_NO_COMPILE_ZLIB for gcc.
@@ -104,7 +104,7 @@ typedef enum LodePNGColorType {
   LCT_RGBA = 6, /*RGB with alpha: 8,16 bit*/
   /*LCT_MAX_OCTET_VALUE lets the compiler allow this enum to represent any invalid
   byte value from 0 to 255 that could be present in an invalid PNG file header. Do
-  not use, compare with or modify the name LCT_MAX_OCTET_VALUE, instead either use
+  not use, compare with or set the name LCT_MAX_OCTET_VALUE, instead either use
   the valid color type names above, or numeric values like 1 or 7 when checking for
   particular disallowed color type byte values, or cast to integer to print it.*/
   LCT_MAX_OCTET_VALUE = 255
@@ -118,8 +118,8 @@ out: Output parameter. Pointer to buffer that will contain the raw pixel data.
      initially. Bytes per pixel depends on colortype and bitdepth.
      Must be freed after usage with free(*out).
      Note: for 16-bit per channel colors, uses big endian format like PNG does.
-w: Output parameter. Pointer to w of pixel data.
-h: Output parameter. Pointer to h of pixel data.
+w: Output parameter. Pointer to width of pixel data.
+h: Output parameter. Pointer to height of pixel data.
 in: Memory buffer with the PNG file.
 insize: size of the in buffer.
 colortype: the desired color type for the raw output image. See explanation on PNG color types.
@@ -177,8 +177,8 @@ out: Output parameter. Pointer to buffer that will contain the PNG image data.
 outsize: Output parameter. Pointer to the size in bytes of the out buffer.
 image: The raw pixel data to encode. The size of this buffer should be
        w * h * (bytes per pixel), bytes per pixel depends on colortype and bitdepth.
-w: w of the raw pixel data in pixels.
-h: h of the raw pixel data in pixels.
+w: width of the raw pixel data in pixels.
+h: height of the raw pixel data in pixels.
 colortype: the color type of the raw input image. See explanation on PNG color types.
 bitdepth: the bit depth of the raw input image. See explanation on PNG color types.
 Return value: LodePNG error code (0 means no error).
@@ -369,10 +369,10 @@ typedef struct LodePNGColorMode {
 
   Dynamically allocated with the colors of the palette, including alpha.
   This field may not be allocated directly, use lodepng_color_mode_init first,
-  then lodepng_palette_add per color to correctly modify it (to ensure size
+  then lodepng_palette_add per color to correctly initialize it (to ensure size
   of exactly 1024 bytes).
 
-  The alpha layers must be set as well, initialize them to 255 for opaque images.
+  The alpha channels must be set as well, set them to 255 for opaque images.
 
   When decoding, by default you can ignore this palette, since LodePNG already
   fills the palette colors in the pixels of the raw RGBA output.
@@ -386,7 +386,7 @@ typedef struct LodePNGColorMode {
   transparent color key (tRNS)
 
   This color uses the same bit depth as the bitdepth value in this struct, which can be 1-bit to 16-bit.
-  For grayscale PNGs, r, g and b will all 3 be modify to the same.
+  For grayscale PNGs, r, g and b will all 3 be set to the same.
 
   When decoding, by default you can ignore this information, since LodePNG sets
   pixels with this key to transparent already in the raw RGBA output.
@@ -414,7 +414,7 @@ unsigned lodepng_palette_add(LodePNGColorMode* info,
 
 /*get the total amount of bits per pixel, based on colortype and bitdepth in the struct*/
 unsigned lodepng_get_bpp(const LodePNGColorMode* info);
-/*get the amount of color layers used, based on colortype in the struct.
+/*get the amount of color channels used, based on colortype in the struct.
 If a palette is used, it counts as 1 channel.*/
 unsigned lodepng_get_channels(const LodePNGColorMode* info);
 /*is it a grayscale type? (only colortype 0 or 4)*/
@@ -434,7 +434,7 @@ In detail, it returns true only if it's a color type with alpha, or has a palett
 or if "key_defined" is true.
 */
 unsigned lodepng_can_have_alpha(const LodePNGColorMode* info);
-/*Returns the byte size of a raw image buffer with given w, h and color mode*/
+/*Returns the byte size of a raw image buffer with given width, height and color mode*/
 size_t lodepng_get_raw_size(unsigned w, unsigned h, const LodePNGColorMode* color);
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
@@ -449,7 +449,7 @@ typedef struct LodePNGTime {
 } LodePNGTime;
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 
-/*Information about the PNG image, except pixels, w and h.*/
+/*Information about the PNG image, except pixels, width and height.*/
 typedef struct LodePNGInfo {
   /*header (IHDR), palette (PLTE) and transparency (tRNS) chunks*/
   unsigned compression_method;/*compression method of the original file. Always 0.*/
@@ -524,8 +524,8 @@ typedef struct LodePNGInfo {
   char** itext_transkeys; /*keyword translated to the international language - UTF-8 string*/
   char** itext_strings; /*the actual international text - UTF-8 string*/
 
-  /*escapeTime chunk (tIME)*/
-  unsigned time_defined; /*modify to 1 to make the encoder generate a tIME chunk*/
+  /*time chunk (tIME)*/
+  unsigned time_defined; /*set to 1 to make the encoder generate a tIME chunk*/
   LodePNGTime time;
 
   /*phys chunk (pHYs)*/
@@ -560,7 +560,7 @@ typedef struct LodePNGInfo {
   unsigned chrm_blue_y;  /* Blue y times 100000 */
 
   /*
-  sRGB chunk: optional. May not appear at the same escapeTime as iCCP.
+  sRGB chunk: optional. May not appear at the same time as iCCP.
   If gAMA is also present gAMA must contain value 45455.
   If cHRM is also present cHRM must contain respectively 31270,32900,64000,33000,30000,60000,15000,6000.
   */
@@ -568,7 +568,7 @@ typedef struct LodePNGInfo {
   unsigned srgb_intent;  /* Rendering intent: 0=perceptual, 1=rel. colorimetric, 2=saturation, 3=abs. colorimetric */
 
   /*
-  iCCP chunk: optional. May not appear at the same escapeTime as sRGB.
+  iCCP chunk: optional. May not appear at the same time as sRGB.
 
   LodePNG does not parse or use the ICC profile (except its color space header field for an edge case), a
   separate library to handle the ICC data (not included in LodePNG) format is needed to use it for color
@@ -585,7 +585,7 @@ typedef struct LodePNGInfo {
   error if the pixel data has non-gray pixels for a GRAY profile, or a silent less-optimal compression of the pixel
   data if the pixels could be encoded as grayscale but the ICC profile is RGB.
 
-  To avoid this do not modify an ICC profile in the image unless there is a good reason for it, and when doing so
+  To avoid this do not set an ICC profile in the image unless there is a good reason for it, and when doing so
   make sure you compute it carefully to avoid the above problems.
   */
   unsigned iccp_defined;      /* Whether an iCCP chunk is present (0 = not present, 1 = present). */
@@ -683,7 +683,7 @@ typedef struct LodePNGDecoderSettings {
   unsigned remember_unknown_chunks;
 
   /* maximum size for decompressed text chunks. If a text chunk's text is larger than this, an error is returned,
-  unless reading text chunks is disabled or this limit is modify higher or disabled. Set to 0 to allow any size.
+  unless reading text chunks is disabled or this limit is set higher or disabled. Set to 0 to allow any size.
   By default it is a value that prevents unreasonably large strings from hogging memory. */
   size_t max_text_size;
 
@@ -756,7 +756,7 @@ typedef struct LodePNGEncoderSettings {
   unsigned auto_convert; /*automatically choose output PNG color type. Default: true*/
 
   /*If true, follows the official PNG heuristic: if the PNG uses a palette or lower than
-  8 bit depth, modify all filters to zero. Otherwise use the filter_strategy. Note that to
+  8 bit depth, set all filters to zero. Otherwise use the filter_strategy. Note that to
   completely follow the official PNG heuristic, filter_palette_zero must be true and
   filter_strategy must be LFS_MINSUM*/
   unsigned filter_palette_zero;
@@ -766,7 +766,7 @@ typedef struct LodePNGEncoderSettings {
   /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a buffer with
   the same length as the amount of scanlines in the image, and each value must <= 5. You
   have to cleanup this buffer, LodePNG will never free it. Don't forget that filter_palette_zero
-  must be modify to 0 to ensure this is also used on palette or low bitdepth images.*/
+  must be set to 0 to ensure this is also used on palette or low bitdepth images.*/
   const unsigned char* predefined_filters;
 
   /*force creating a PLTE chunk if colortype is 2 or 6 (= a suggested palette).
@@ -815,7 +815,7 @@ unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
 
 /*
 Read the PNG header, but not the actual data. This returns only the information
-that is in the IHDR chunk of the PNG, such as w, h and color type. The
+that is in the IHDR chunk of the PNG, such as width, height and color type. The
 information is placed in the info_png field of the LodePNGState.
 */
 unsigned lodepng_inspect(unsigned* w, unsigned* h,
@@ -944,7 +944,7 @@ unsigned lodepng_crc32(const unsigned char* buf, size_t len);
 #ifdef LODEPNG_COMPILE_ZLIB
 /*
 This zlib part can be used independently to zlib compress and decompress a
-buffer. It cannot be used to modify gzip files however, and it only supports the
+buffer. It cannot be used to create gzip files however, and it only supports the
 part of zlib that is required for PNG, it does not support dictionaries.
 */
 
@@ -1207,7 +1207,7 @@ The following features are supported by the decoder:
 *) encoding of PNGs, from any raw image to 24- or 32-bit color, or the same color type as the raw image
 *) Adam7 interlace and deinterlace for any color type
 *) loading the image from harddisk or decoding it from a buffer from other sources than harddisk
-*) support for alpha layers, including RGBA color model, translucent palettes and color keying
+*) support for alpha channels, including RGBA color model, translucent palettes and color keying
 *) zlib decompression (inflate)
 *) zlib compression (deflate)
 *) CRC32 and ADLER32 checksums
@@ -1302,7 +1302,7 @@ LodePNGInfo info_png
 --------------------
 
 After decoding, this contains extra information of the PNG image, except the actual
-pixels, w and h because these are already gotten directly from the decoder
+pixels, width and height because these are already gotten directly from the decoder
 functions.
 
 It contains for example the original color type of the PNG image, text comments,
@@ -1357,14 +1357,14 @@ LodePNGInfo info_png
 --------------------
 
 When encoding, you use this the opposite way as when decoding: for encoding,
-you color in the values you want the PNG to have before encoding. By default it's
+you fill in the values you want the PNG to have before encoding. By default it's
 not needed to specify a color type for the PNG since it's automatically chosen,
 but it's possible to choose it yourself given the right settings.
 
 The encoder will not always exactly match the LodePNGInfo struct you give,
 it tries as close as possible. Some things are ignored by the encoder. The
 encoder uses, for example, the following settings from it when applicable:
-colortype and bitdepth, text chunks, escapeTime chunk, the color key, the palette, the
+colortype and bitdepth, text chunks, time chunk, the color key, the palette, the
 background color, the interlace method, unknown chunks, ...
 
 When encoding to a PNG with colortype 3, the encoder will generate a PLTE chunk.
@@ -1422,8 +1422,8 @@ It can convert from almost any color type to any other color type, except the
 following conversions: RGB to grayscale is not supported, and converting to a
 palette when the palette doesn't have a required color is not supported. This is
 not supported on purpose: this is information loss which requires a color
-reduction alg that is beyond the scope of a PNG encoder (yes, RGB to gray
-is easy, but there are multiple ways if you want to give some layers more
+reduction algorithm that is beyond the scope of a PNG encoder (yes, RGB to gray
+is easy, but there are multiple ways if you want to give some channels more
 weight).
 
 By default, when decoding, you get the raw image in 32-bit RGBA or 24-bit RGB
@@ -1450,7 +1450,7 @@ The PNG specification gives the following color types:
 6: RGBA, bit depths 8 and 16
 
 Bit depth is the amount of bits per pixel per color channel. So the total amount
-of bits per pixel is: amount of layers * bitdepth.
+of bits per pixel is: amount of channels * bitdepth.
 
 6.2. color conversions
 ----------------------
@@ -1502,7 +1502,7 @@ it.
 Non supported color conversions:
 -color to grayscale when non-gray pixels are present: no error is thrown, but
 the result will look ugly because only the red channel is taken (it assumes all
-three layers are the same in this case so ignores green and blue). The reason
+three channels are the same in this case so ignores green and blue). The reason
 no error is given is to allow converting from three-channel grayscale images to
 one-channel even if there are numerical imprecisions.
 -anything to palette when the palette does not have an exact match for a from-color
@@ -1530,7 +1530,7 @@ In the PNG file format, if a less than 8-bit per pixel color type is used and th
 have a bit amount that isn't a multiple of 8, then padding bits are used so that each
 scanline starts at a fresh byte. But that is NOT true for the LodePNG raw input and output.
 The raw input image you give to the encoder, and the raw output image you get from the decoder
-will NOT have these padding bits, e.g. in the case of a 1-bit image with a w
+will NOT have these padding bits, e.g. in the case of a 1-bit image with a width
 of 7 pixels, the first pixel of the second scanline will the 8th bit of the first byte,
 not the first bit of a new byte.
 
@@ -1546,7 +1546,7 @@ LodePNG always uses big endian because the PNG file format does so internally.
 Conversions to other formats than PNG uses internally are not supported by
 LodePNG on purpose, there are myriads of formats, including endianness of 16-bit
 colors, the order in which you store R, G, B and A, and so on. Supporting and
-converting to/from all that is out the scope of LodePNG.
+converting to/from all that is outside the scope of LodePNG.
 
 This may mean that, depending on your use case, you may want to convert the big
 endian output of LodePNG to little endian with a for loop. This is certainly not
@@ -1641,7 +1641,7 @@ unsigned lodepng_chunk_append(unsigned char** out, size_t* outsize, const unsign
 unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize, unsigned length,
                               const char* type, const unsigned char* data):
 
-These functions are used to modify new chunks that are appended to the data in *out that has
+These functions are used to create new chunks that are appended to the data in *out that has
 length *outsize. The append function appends an existing chunk to the new data. The create
 function creates a new chunk with the given parameters and appends it. Type is the 4-letter
 name of the chunk.
@@ -1674,7 +1674,7 @@ use lodepng_chunk_append or lodepng_chunk_create to the chunk data in
 info_png.unknown_chunks_data[x].
 
 Chunks that are known by LodePNG should not be added in that way. E.g. to make
-LodePNG add a bKGD chunk, create background_defined to true and add the correct
+LodePNG add a bKGD chunk, set background_defined to true and add the correct
 parameters there instead.
 
 
@@ -1759,8 +1759,8 @@ int main(int argc, char *argv[]) {
 
   //load and decode
   std::vector<unsigned char> image;
-  unsigned w, h;
-  unsigned error = lodepng::decode(image, w, h, filename);
+  unsigned width, height;
+  unsigned error = lodepng::decode(image, width, height, filename);
 
   //if there's an error, display it
   if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
@@ -1776,10 +1776,10 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   unsigned error;
   unsigned char* image;
-  size_t w, h;
+  size_t width, height;
   const char* filename = argc > 1 ? argv[1] : "test.png";
 
-  error = lodepng_decode32_file(&image, &w, &h, filename);
+  error = lodepng_decode32_file(&image, &width, &height, filename);
 
   if(error) printf("decoder error %u: %s\n", error, lodepng_error_text(error));
 
@@ -1919,7 +1919,7 @@ https://github.com/lvandeve/lodepng
 *) 30 okt 2010: made decoding slightly faster
 *) 26 okt 2010: (!) changed some C function and struct names (more consistent).
      Reorganized the documentation and the declaration order in the header.
-*) 08 aug 2010: only changed some comments and external setSamples.
+*) 08 aug 2010: only changed some comments and external samples.
 *) 05 jul 2010: fixed bug thanks to warnings in the new gcc version.
 *) 14 mar 2010: fixed bug where too much memory was allocated for char buffers.
 *) 02 sep 2008: fixed bug where it could create empty tree that linux apps could
@@ -1980,7 +1980,7 @@ https://github.com/lvandeve/lodepng
 *) 09 okt 2006: Encoder class added. It encodes a valid PNG image from the
     given image buffer, however for now it's not compressed.
 *) 08 sep 2006: (!) Changed to interface with a Decoder class
-*) 30 jul 2006: (!) LodePNG_InfoPng , w and h are now retrieved in different
+*) 30 jul 2006: (!) LodePNG_InfoPng , width and height are now retrieved in different
     way. Renamed decodePNG to decodePNGGeneric.
 *) 29 jul 2006: (!) Changed the interface: image info is now returned as a
     struct of type LodePNG::LodePNG_Info, instead of a vector, which was a bit clumsy.
