@@ -1,16 +1,10 @@
 #include "../lib/lodepng/lodepng.h"
 #include "../fractoid.h"
 
-Image::Image(int w, int h) : canvas(4 * w * h, 255) {
-	this->w = w;
-	this->h = h;
-	this->ratio = (double) w / h;
-}
+Image::Image(int w, int h) : w(w), h(h), ratio((double) w / h), size(4 * w * h), canvas(size, 255) {}
 
-void Image::add(std::vector<unsigned char> canvasIn) {
-	for (int i = 0; i < canvas.size(); i++) {
-		canvas[i] += canvasIn[i];
-	}
+unsigned int& Image::operator()(int i, int j, int ch) {
+	return canvas[4 * w * i + 4 * j + ch];
 }
 
 void Image::brightness(double value) {
@@ -29,8 +23,20 @@ void Image::fill(unsigned char r, unsigned char g, unsigned char b) {
 	}
 }
 
-unsigned int Image::save(const std::string &filename) const {
-	return lodepng::encode(filename, canvas, w, h);
+void Image::normalize() {
+	for (int ch = 0; ch < 3; ch++) {
+		double max = 0;
+		for (int i = 0; i < size; i += 4) {
+			max = canvas[i + ch] > max ? canvas[i + ch] : max;
+		}
+		for (int i = 0; i < size; i += 4) {
+			canvas[i + ch] = (unsigned int) ((double) canvas[i + ch] / max * 255.0);
+		}
+	}
+}
+
+unsigned int Image::save(const std::string &filename) {
+	return lodepng::encode(filename, std::vector<unsigned char>(canvas.begin(), canvas.end()), w, h);
 }
 
 void Image::set(int i, int j, unsigned char r, unsigned char g, unsigned char b) {

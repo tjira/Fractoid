@@ -25,14 +25,15 @@ class Image {
 	friend class Complex;
 public:
 	Image(int w, int h);
-	[[nodiscard]] unsigned int save(const std::string &filename) const;
-	void add(std::vector<unsigned char> canvasIn);
-	void set(int i, int j, unsigned char r, unsigned char g, unsigned char b);
-	void fill(unsigned char r, unsigned char g, unsigned char b);
+	unsigned int& operator()(int i, int j, int ch);
 	void brightness(double value);
+	void fill(unsigned char r, unsigned char g, unsigned char b);
+	void normalize();
+	[[nodiscard]] unsigned int save(const std::string &filename);
+	void set(int i, int j, unsigned char r, unsigned char g, unsigned char b);
 
 private:
-	int w, h; double ratio; std::vector<unsigned char> canvas;
+	int w, h, size; double ratio; std::vector<unsigned int> canvas;
 };
 
 template<class F>

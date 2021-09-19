@@ -14,7 +14,7 @@ followed by `make`. Both binaries will be compiled into the `bin` folder.
 
 To create a fractal object, simply call the class constructor with the required parameters.
 ```c++
-Mandelbrot fractal(80, 10);
+Mandelbrot fractal(50, 10);
 ```
 After initialization of the fractal object, we need to create an `Algorithm` object, which will hold a specified method
 of generation. For demonstration purposes, we can use smoothed periodic coloring with an example seed of 34.
@@ -44,5 +44,5 @@ If you followed these steps carefully, the following image will be generated.
 The usage of the CLI is pretty straightforward. To see all the available options simply run the `fractoid-cli`
 executable without any arguments. To replicate the image above, run the following command.
 ```shell
-./fractoid-cli mandelbrot -l -0.75 0 -s 34 -f 0 0 0 --smooth
+./fractoid-cli mandelbrot -b 10 -f 0 0 0 -i 50 -l -0.75 0 -s 34 --smooth
 ```

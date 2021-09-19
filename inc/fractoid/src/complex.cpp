@@ -15,33 +15,26 @@ F Complex<F>::copy(int itersIn, int bailoutIn) const {
 
 template<class F>
 void Complex<F>::density(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const {
-	std::mt19937 twister(alg.seed);
-	std::uniform_real_distribution<double> real(cRe - 1.5 * img.ratio, cRe + 1.5 * img.ratio);
-	std::uniform_real_distribution<double> imag(-cIm - 1.5, -cIm + 1.5);
-	for (int index = 0; index < alg.layers; index++) {
-		F fractal = copy(iters * (alg.layers == 1 ? 1 : pow(10, 2 - index)), bail);
-		std::vector<unsigned int> layer(4 * img.w * img.h);
-		#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, twister, real, imag, fractal, index, layer)
+	std::mt19937 mt(alg.seed);
+	std::uniform_real_distribution<double> rRe(cRe - 1.5 * img.ratio, cRe + 1.5 * img.ratio);
+	std::uniform_real_distribution<double> rIm(-cIm - 1.5, -cIm + 1.5);
+	for (int layer = 0; layer < alg.layers; layer++) {
+		F fractal = copy(iters * pow(10, layer), bail);
+		#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, mt, rRe, rIm, fractal, layer)
 		for (int sample = 0; sample < alg.samples; sample++) {
-			double zMag; std::vector<std::vector<double>> ps = fractal.orbit(real(twister), imag(twister), zMag);
+			double zMag; std::vector<std::vector<double>> ps = fractal.orbit(rRe(mt), rIm(mt), zMag);
 			for (auto &p : ps) {
-				if (p[0] < real.a() || p[0] > real.b() || p[1] < imag.a() || p[1] > imag.b()) continue;
+				if (p[0] < rRe.a() || p[0] > rRe.b() || p[1] < rIm.a() || p[1] > rIm.b()) continue;
 				int i = int(((p[1] + cIm) * img.h * z + 1.5 * img.h) / 3.0);
 				int j = int(((p[0] - cRe) * img.h * z + 1.5 * img.w) / 3.0);
-				layer[4 * img.w * i + 4 * j + index]++;
+				img(i, j, layer)++;
 				if (alg.layers == 1) {
-					layer[4 * img.w * i + 4 * j + 1]++;
-					layer[4 * img.w * i + 4 * j + 2]++;
+					img(i, j, 1)++;
+					img(i, j, 2)++;
 				}
 			}
 		}
-		double max = *std::max_element(layer.begin(), layer.end());
-		if (max != 255) {
-			for(unsigned int &val : layer) {
-				val = (unsigned int) (val / max * 255);
-			}
-		}
-		img.add(std::vector<unsigned char>(layer.begin(), layer.end()));
+		img.normalize();
 	}
 }
 

@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 	argparse::ArgumentParser program("./fractoid-cli");
 	program.add_description("Command line interface for Fractoid library.");
 	program.add_argument("name").help("name of the fractal to generate");
-	program.add_argument("-b", "--bailout").help("bail radius").default_value(100).action([](const std::string &value) { return std::stoi(value); });
+	program.add_argument("-b", "--bailout").help("bail radius").default_value(50).action([](const std::string &value) { return std::stoi(value); });
 	program.add_argument("-f", "--fill").help("fill color").action([](const std::string& value) { return (unsigned char) std::stoi(value); }).nargs(3);
 	program.add_argument("-i", "--iters").help("maximum number of iterations before bail").default_value(100).action([](const std::string &value) { return std::stoi(value); });
 	program.add_argument("-l", "--location").help("real and imaginary part of location location").default_value(std::vector<double>{0.0, 0.0}).action([](const std::string& value) { return std::stod(value); }).nargs(2);
