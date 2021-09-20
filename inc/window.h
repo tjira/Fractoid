@@ -12,6 +12,7 @@ namespace Ui {
 struct Options {
 	int iters = 50, bail = 100, w = 1024, h = 576;
 	double cRe = -0.75, cIm = 0, z = 1.3;
+	Algorithm alg = Algorithm::periodic(true, 34);
 };
 
 class Window : public QMainWindow {
@@ -21,7 +22,6 @@ public:
 	~Window() override;
 
 private:
-	void display(const Image &img);
 	template<class F>
 	void paint();
 	Ui::Window *ui; QThread *worker; Options opt;

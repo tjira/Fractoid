@@ -82,7 +82,54 @@
 					<addaction name="manowar"/>
 					<addaction name="phoenix"/>
 				</widget>
+				<widget class="QMenu" name="alg">
+					<property name="title">
+						<string>Algorithm</string>
+							</property>
+							<actiongroup name="algs">
+								<action name="solid">
+									<property name="text">
+										<string>Solid</string>
+									</property>
+									<property name="checkable">
+										<bool>true</bool>
+									</property>
+								</action>
+								<action name="periodic">
+									<property name="text">
+										<string>Periodic</string>
+									</property>
+									<property name="checkable">
+										<bool>true</bool>
+									</property>
+									<property name="checked">
+										<bool>true</bool>
+									</property>
+								</action>
+								<action name="orbitrap">
+									<property name="text">
+										<string>Orbitrap</string>
+									</property>
+									<property name="checkable">
+										<bool>true</bool>
+									</property>
+								</action>
+								<action name="density">
+									<property name="text">
+										<string>Density</string>
+									</property>
+									<property name="checkable">
+										<bool>true</bool>
+									</property>
+								</action>
+							</actiongroup>
+							<addaction name="solid"/>
+							<addaction name="periodic"/>
+							<addaction name="orbitrap"/>
+							<addaction name="density"/>
+				</widget>
 				<addaction name="formula"/>
+				<addaction name="alg"/>
 			</widget>
 			<widget class="QMenu" name="calc">
 				<property name="title">

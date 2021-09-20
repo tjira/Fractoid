@@ -24,9 +24,9 @@ void Complex<F>::density(Image &img, double cRe, double cIm, double z, const Alg
 		for (int sample = 0; sample < alg.samples; sample++) {
 			double zMag; std::vector<std::vector<double>> ps = fractal.orbit(rRe(mt), rIm(mt), zMag);
 			for (auto &p : ps) {
-				if (p[0] < rRe.a() || p[0] > rRe.b() || p[1] < rIm.a() || p[1] > rIm.b()) continue;
 				int i = int(((p[1] + cIm) * img.h * z + 1.5 * img.h) / 3.0);
 				int j = int(((p[0] - cRe) * img.h * z + 1.5 * img.w) / 3.0);
+				if (i < 0 || j < 0 || i >= img.h || j >= img.w) continue;
 				img(i, j, layer)++;
 				if (alg.layers == 1) {
 					img(i, j, 1)++;
