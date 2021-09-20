@@ -1,6 +1,6 @@
 #include <chrono>
-#include "../inc/fractoid/fractoid.h"
 #include "../lib/argparse/argparse.hpp"
+#include "../lib/fractoid/fractoid.h"
 
 template<typename F>
 void execute(const argparse::ArgumentParser& program) {
@@ -14,7 +14,10 @@ void execute(const argparse::ArgumentParser& program) {
 	} else if (program.is_used("--density")) {
 		alg = Algorithm::density(program.get<int>("--density"), program.get<int>("--samples"), program.get<int>("--seed"));
 	}
-	if (program.is_used("--fill")) alg.color(program.get<std::vector<unsigned char>>("--fill"));
+	if (program.is_used("--fill")) {
+		auto color = program.get<std::vector<unsigned char>>("--fill");
+		alg.color(color[0], color[1], color[2]);
+	}
 	F fractal(
 		program.get<int>("--iters"),
 		program.get<int>("--bailout")
@@ -44,7 +47,7 @@ void execute(const argparse::ArgumentParser& program) {
 int main(int argc, char *argv[]) {
 	argparse::ArgumentParser program("./fractoid-cli");
 	program.add_description("Command line interface for Fractoid library.");
-	program.add_argument("name").help("name of the fractal to generate");
+	program.add_argument("name").help("name of the fractal to paint");
 	program.add_argument("-b", "--bailout").help("bail radius").default_value(50).action([](const std::string &value) { return std::stoi(value); });
 	program.add_argument("-f", "--fill").help("fill color").action([](const std::string& value) { return (unsigned char) std::stoi(value); }).nargs(3);
 	program.add_argument("-i", "--iters").help("maximum number of iterations before bail").default_value(100).action([](const std::string &value) { return std::stoi(value); });

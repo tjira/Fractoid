@@ -12,7 +12,7 @@ struct Algorithm {
 	static Algorithm periodic(bool smooth, int seed = 1);
 	static Algorithm orbitrap(int trap, int seed = 1);
 	static Algorithm solid(const std::vector<unsigned char> &outside);
-	void color(const std::vector<unsigned char> &insideIn);
+	void color(unsigned char r, unsigned char g, unsigned char b);
 	int alg; bool fill, smooth; int trap, layers, samples, seed;
 	std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> rnd;
 
@@ -26,7 +26,8 @@ class Image {
 public:
 	Image(int w, int h);
 	unsigned int& operator()(int i, int j, int ch);
-	void brightness(double value);
+	void brightness(double val);
+	[[nodiscard]] std::vector<unsigned char> raw() const;
 	void fill(unsigned char r, unsigned char g, unsigned char b);
 	void normalize();
 	[[nodiscard]] unsigned int save(const std::string &filename);

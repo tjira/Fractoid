@@ -39,9 +39,9 @@ Algorithm Algorithm::solid(const std::vector<unsigned char> &outside) {
 	};
 }
 
-void Algorithm::color(const std::vector<unsigned char> &insideIn) {
+void Algorithm::color(unsigned char r, unsigned char g, unsigned char b) {
 	fill = true;
-	in = insideIn;
+	in = {r, g, b};
 }
 
 std::vector<double> Algorithm::randomize(int seed) {

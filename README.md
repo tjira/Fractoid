@@ -1,12 +1,17 @@
 # Fractoid
 
-Fractoid is a free software to generate beautiful fractal images. Fractoid consists of a dependency-free library and a
-command line interface.
+Fractoid is a free software to paint beautiful fractal images. Fractoid consists of a dependency-free library,
+command line interface and graphical user interface.
 
 ## Installation
 
-To compile the library along with the executable, navigate to the project folder and run `cmake .`
-followed by `make`. Both binaries will be compiled into the `bin` folder.
+To compile the library along with the executables, navigate to the project folder and run `cmake .`
+followed by `make`. Both binaries will be compiled into the *bin* folder. If OpenMP is available it will be used to
+parallelize some important *for* loops. Graphical user interface will be compiled only if *Qt5* is installed. On Linux,
+you can install *Qt5* by running the following command.
+```c++
+sudo apt install qt5-default
+```
 
 ## Usage
 
@@ -24,7 +29,7 @@ Algorithm alg = Algorithm::periodic(true, 34);
 For the fractal to have a black filling, we need to specify the fill color. If you don't specify the fill color, the
 color will be determined based on the number of iteration before bail in the fractal.
 ```c++
-alg.fill(0, 0, 0);
+alg.color(0, 0, 0);
 ```
 Now it's time to paint the fractal in the `Image` object. We need to specify the center, zoom, alg and
 resolution.

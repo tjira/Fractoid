@@ -1,4 +1,4 @@
-#include "../lib/lodepng/lodepng.h"
+#include "../../lodepng/lodepng.h"
 #include "../fractoid.h"
 
 Image::Image(int w, int h) : w(w), h(h), ratio((double) w / h), size(4 * w * h), canvas(size, 255) {}
@@ -7,12 +7,16 @@ unsigned int& Image::operator()(int i, int j, int ch) {
 	return canvas[4 * w * i + 4 * j + ch];
 }
 
-void Image::brightness(double value) {
+void Image::brightness(double val) {
 	for (int i = 0; i < canvas.size(); i += 4) {
-		canvas[i + 0] = (unsigned char) MIN(value * canvas[i + 0], 255);
-		canvas[i + 1] = (unsigned char) MIN(value * canvas[i + 1], 255);
-		canvas[i + 2] = (unsigned char) MIN(value * canvas[i + 2], 255);
+		canvas[i + 0] = (unsigned char) MIN(val * canvas[i + 0], 255);
+		canvas[i + 1] = (unsigned char) MIN(val * canvas[i + 1], 255);
+		canvas[i + 2] = (unsigned char) MIN(val * canvas[i + 2], 255);
 	}
+}
+
+std::vector<unsigned char> Image::raw() const {
+	return std::vector<unsigned char>(canvas.begin(), canvas.end());
 }
 
 void Image::fill(unsigned char r, unsigned char g, unsigned char b) {
