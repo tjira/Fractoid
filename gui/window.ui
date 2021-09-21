@@ -1,159 +1,208 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-	<class>Window</class>
-	<widget class="QMainWindow" name="Window">
-		<property name="windowTitle">
-			<string>Fractoid</string>
-		</property>
-		<widget class="QMenuBar" name="menu">
-			<widget class="QMenu" name="file">
-				<property name="title">
-					<string>File</string>
-				</property>
-				<action name="quit">
-					<property name="text">
-						<string>Quit</string>
-					</property>
-				</action>
-				<action name="render">
-					<property name="text">
-						<string>Render</string>
-					</property>
-				</action>
-				<addaction name="render"/>
-				<addaction name="quit"/>
-			</widget>
-			<widget class="QMenu" name="fractal">
-				<property name="title">
-					<string>Fractal</string>
-				</property>
-				<widget class="QMenu" name="formula">
-					<property name="title">
-						<string>Formula</string>
-					</property>
-					<actiongroup name="formulas">
-						<action name="burningship">
-							<property name="text">
-								<string>Burning Ship</string>
-							</property>
-							<property name="checkable">
-								<bool>true</bool>
-							</property>
-						</action>
-						<action name="julia">
-							<property name="text">
-								<string>Julia</string>
-							</property>
-							<property name="checkable">
-								<bool>true</bool>
-							</property>
-						</action>
-						<action name="mandelbrot">
-							<property name="text">
-								<string>Mandelbrot</string>
-							</property>
-							<property name="checkable">
-								<bool>true</bool>
-							</property>
-							<property name="checked">
-								<bool>true</bool>
-							</property>
-						</action>
-						<action name="manowar">
-							<property name="text">
-								<string>Manowar</string>
-							</property>
-							<property name="checkable">
-								<bool>true</bool>
-							</property>
-						</action>
-						<action name="phoenix">
-							<property name="text">
-								<string>Phoenix</string>
-							</property>
-							<property name="checkable">
-								<bool>true</bool>
-							</property>
-						</action>
-					</actiongroup>
-					<addaction name="burningship"/>
-					<addaction name="julia"/>
-					<addaction name="mandelbrot"/>
-					<addaction name="manowar"/>
-					<addaction name="phoenix"/>
-				</widget>
-				<widget class="QMenu" name="alg">
-					<property name="title">
-						<string>Algorithm</string>
-							</property>
-							<actiongroup name="algs">
-								<action name="solid">
-									<property name="text">
-										<string>Solid</string>
-									</property>
-									<property name="checkable">
-										<bool>true</bool>
-									</property>
-								</action>
-								<action name="periodic">
-									<property name="text">
-										<string>Periodic</string>
-									</property>
-									<property name="checkable">
-										<bool>true</bool>
-									</property>
-									<property name="checked">
-										<bool>true</bool>
-									</property>
-								</action>
-								<action name="orbitrap">
-									<property name="text">
-										<string>Orbitrap</string>
-									</property>
-									<property name="checkable">
-										<bool>true</bool>
-									</property>
-								</action>
-								<action name="density">
-									<property name="text">
-										<string>Density</string>
-									</property>
-									<property name="checkable">
-										<bool>true</bool>
-									</property>
-								</action>
-							</actiongroup>
-							<addaction name="solid"/>
-							<addaction name="periodic"/>
-							<addaction name="orbitrap"/>
-							<addaction name="density"/>
-				</widget>
-				<addaction name="formula"/>
-				<addaction name="alg"/>
-			</widget>
-			<widget class="QMenu" name="calc">
-				<property name="title">
-					<string>Calculation</string>
-				</property>
-				<action name="iters">
-					<property name="text">
-						<string>Iterations</string>
-					</property>
-				</action>
-				<action name="bail">
-					<property name="text">
-						<string>Bailout</string>
-					</property>
-				</action>
-				<addaction name="iters"/>
-				<addaction name="bail"/>
-			</widget>
-			<addaction name="file"/>
-			<addaction name="fractal"/>
-			<addaction name="calc"/>
-		</widget>
-		<widget class="QLabel" name="image"/>
-	</widget>
-	<resources/>
-	<connections/>
+ <class>Window</class>
+ <widget class="QMainWindow" name="Window">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>598</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Fractoid</string>
+  </property>
+  <widget class="QLabel" name="image"/>
+  <widget class="QMenuBar" name="menu">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="file">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="save">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <actiongroup name="saves">
+      <action name="saveConfig">
+       <property name="text">
+        <string>Configuration</string>
+       </property>
+      </action>
+      <action name="saveImage">
+       <property name="text">
+        <string>Image</string>
+       </property>
+      </action>
+     </actiongroup>
+     <addaction name="saveConfig"/>
+     <addaction name="saveImage"/>
+    </widget>
+    <action name="render">
+     <property name="text">
+      <string>Render</string>
+     </property>
+    </action>
+    <action name="quit">
+     <property name="text">
+      <string>Quit</string>
+     </property>
+    </action>
+    <addaction name="save"/>
+    <addaction name="render"/>
+    <addaction name="quit"/>
+   </widget>
+   <widget class="QMenu" name="fractal">
+    <property name="title">
+     <string>Fractal</string>
+    </property>
+    <widget class="QMenu" name="formula">
+     <property name="title">
+      <string>Formula</string>
+     </property>
+     <actiongroup name="formulas">
+      <action name="burningship">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Burning Ship</string>
+       </property>
+      </action>
+      <action name="julia">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Julia</string>
+       </property>
+      </action>
+      <action name="mandelbrot">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Mandelbrot</string>
+       </property>
+      </action>
+      <action name="manowar">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Manowar</string>
+       </property>
+      </action>
+      <action name="phoenix">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Phoenix</string>
+       </property>
+      </action>
+     </actiongroup>
+     <addaction name="burningship"/>
+     <addaction name="julia"/>
+     <addaction name="mandelbrot"/>
+     <addaction name="manowar"/>
+     <addaction name="phoenix"/>
+    </widget>
+    <widget class="QMenu" name="alg">
+     <property name="title">
+      <string>Algorithm</string>
+     </property>
+     <actiongroup name="algs">
+      <action name="solid">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Solid</string>
+       </property>
+      </action>
+      <action name="periodic">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Periodic</string>
+       </property>
+      </action>
+      <action name="orbitrap">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Orbitrap</string>
+       </property>
+      </action>
+      <action name="density">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Density</string>
+       </property>
+      </action>
+     </actiongroup>
+     <addaction name="solid"/>
+     <addaction name="periodic"/>
+     <addaction name="orbitrap"/>
+     <addaction name="density"/>
+    </widget>
+    <addaction name="formula"/>
+    <addaction name="alg"/>
+   </widget>
+   <widget class="QMenu" name="calc">
+    <property name="title">
+     <string>Calculation</string>
+    </property>
+    <action name="iters">
+     <property name="text">
+      <string>Iterations</string>
+     </property>
+    </action>
+    <action name="bail">
+     <property name="text">
+      <string>Bailout</string>
+     </property>
+    </action>
+    <addaction name="iters"/>
+    <addaction name="bail"/>
+    <addaction name="separator"/>
+    <addaction name="seed"/>
+   </widget>
+   <addaction name="file"/>
+   <addaction name="fractal"/>
+   <addaction name="calc"/>
+  </widget>
+  <action name="seed">
+   <property name="text">
+    <string>Seed</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

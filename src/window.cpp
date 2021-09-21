@@ -1,19 +1,20 @@
 #include "../inc/window.h"
-#include "ui_window.h"
-
-#include <QDebug>
 
 Window::Window(QWidget *parent) : QMainWindow(parent), ui(new Ui::Window), worker(new QThread(this)) {
 	ui->setupUi(this); setFixedSize(opt.w, opt.h + ui->menu->sizeHint().height());
 	connect(ui->quit, &QAction::triggered, this, &QApplication::quit);
 	connect(ui->formulas, &QActionGroup::triggered, this, &Window::run);
 	connect(ui->algs, &QActionGroup::triggered, this, &Window::run);
+	connect(ui->iters, &QAction::triggered, this, &Window::get<Ui_Iters>);
+	connect(ui->bail, &QAction::triggered, this, &Window::get<Ui_Bail>);
+	connect(ui->seed, &QAction::triggered, this, &Window::get<Ui_Seed>);
 	ui->formulas->triggered(ui->mandelbrot);
 }
 
 Window::~Window() {
 	delete ui; delete worker;
 }
+
 template<class F>
 void Window::paint() {
 	F fractal(opt.iters, opt.bail);
@@ -44,14 +45,39 @@ void Window::run(QAction *act) {
 		opt.alg = Algorithm::solid({255, 255, 255});
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Periodic") {
-		opt.alg = Algorithm::periodic(true, 34);
+		opt.alg = Algorithm::periodic(opt.smooth, opt.seed);
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Orbitrap") {
-		opt.alg = Algorithm::orbitrap(4, 34);
+		opt.alg = Algorithm::orbitrap(opt.trap, opt.seed);
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Density") {
-		opt.alg = Algorithm::density(1, 1000000, 34);
+		opt.alg = Algorithm::density(opt.layers, opt.samples, opt.seed);
 		run(ui->formulas->checkedAction());
 	}
 	opt.alg.color(0, 0, 0);
+}
+
+template<typename T>
+void Window::get() {
+	auto *dialog = new QDialog();
+	Ui_Iters dui{}; dui.setupUi(dialog);
+	dynamic_cast<QSpinBox*>(dialog->children().at(2))->setFocus();
+	if (typeid(T) == typeid(Ui_Iters)) {
+		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.iters);
+	} else if (typeid(T) == typeid(Ui_Bail)) {
+		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.bail);
+	} else if (typeid(T) == typeid(Ui_Seed)) {
+		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.seed);
+	}
+	if (dialog->exec() == QDialog::Accepted) {
+		if (typeid(T) == typeid(Ui_Iters)) {
+			opt.iters = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
+		} else if (typeid(T) == typeid(Ui_Bail)) {
+			opt.bail = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
+		} else if (typeid(T) == typeid(Ui_Seed)) {
+			opt.seed = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
+		}
+		run(ui->algs->checkedAction());
+	}
+	delete dialog;
 }
