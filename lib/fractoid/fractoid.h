@@ -11,7 +11,7 @@ struct Algorithm {
 	static Algorithm density(int channels, int samples, int seed = 1);
 	static Algorithm periodic(bool smooth, int seed = 1);
 	static Algorithm orbitrap(int trap, int seed = 1);
-	static Algorithm solid(const std::vector<unsigned char> &outside);
+	static Algorithm solid(unsigned char r, unsigned char g, unsigned char b);
 	void color(unsigned char r, unsigned char g, unsigned char b);
 	int alg; bool fill, smooth; int trap, layers, samples, seed;
 	std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> rnd;

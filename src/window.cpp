@@ -2,13 +2,11 @@
 
 Window::Window(QWidget *parent) : QMainWindow(parent), ui(new Ui::Window), worker(new QThread(this)) {
 	ui->setupUi(this); setFixedSize(opt.w, opt.h + ui->menu->sizeHint().height());
-	connect(ui->quit, &QAction::triggered, this, &QApplication::quit);
-	connect(ui->formulas, &QActionGroup::triggered, this, &Window::run);
 	connect(ui->algs, &QActionGroup::triggered, this, &Window::run);
-	connect(ui->iters, &QAction::triggered, this, &Window::get<Ui_Iters>);
-	connect(ui->bail, &QAction::triggered, this, &Window::get<Ui_Bail>);
-	connect(ui->seed, &QAction::triggered, this, &Window::get<Ui_Seed>);
-	ui->formulas->triggered(ui->mandelbrot);
+	connect(ui->formulas, &QActionGroup::triggered, this, [this]() { run(ui->algs->checkedAction()); });
+	connect(ui->preferences, &QAction::triggered, this, &Window::preferences);
+	connect(ui->quit, &QAction::triggered, this, &QApplication::quit);
+	ui->formulas->triggered(ui->algs->checkedAction());
 }
 
 Window::~Window() {
@@ -42,41 +40,55 @@ void Window::run(QAction *act) {
 		opt.cRe = 0, opt.cIm = 0, opt.z = 1.4;
 		paint<Phoenix>();
 	} else if (act->text() == "Solid") {
-		opt.alg = Algorithm::solid({255, 255, 255});
+		opt.alg = Algorithm::solid(opt.solidR, opt.solidG, opt.solidB);
+		if (opt.fill) opt.alg.color(opt.fillR, opt.fillG, opt.fillB);
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Periodic") {
 		opt.alg = Algorithm::periodic(opt.smooth, opt.seed);
+		if (opt.fill) opt.alg.color(opt.fillR, opt.fillG, opt.fillB);
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Orbitrap") {
 		opt.alg = Algorithm::orbitrap(opt.trap, opt.seed);
+		if (opt.fill) opt.alg.color(opt.fillR, opt.fillG, opt.fillB);
 		run(ui->formulas->checkedAction());
 	} else if (act->text() == "Density") {
 		opt.alg = Algorithm::density(opt.layers, opt.samples, opt.seed);
 		run(ui->formulas->checkedAction());
 	}
-	opt.alg.color(0, 0, 0);
 }
 
-template<typename T>
-void Window::get() {
+void Window::preferences() {
 	auto *dialog = new QDialog();
-	Ui_Iters dui{}; dui.setupUi(dialog);
-	dynamic_cast<QSpinBox*>(dialog->children().at(2))->setFocus();
-	if (typeid(T) == typeid(Ui_Iters)) {
-		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.iters);
-	} else if (typeid(T) == typeid(Ui_Bail)) {
-		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.bail);
-	} else if (typeid(T) == typeid(Ui_Seed)) {
-		dynamic_cast<QSpinBox*>(dialog->children().at(2))->setValue(opt.seed);
-	}
+	Ui_Preferences dui{}; dui.setupUi(dialog);
+	dui.bail->setValue(opt.bail);
+	dui.fill->setChecked(opt.fill);
+	dui.fillR->setValue(opt.fillR);
+	dui.fillG->setValue(opt.fillG);
+	dui.fillB->setValue(opt.fillB);
+	dui.iters->setValue(opt.iters);
+	dui.layers->setCurrentIndex(opt.layers == 1 ? 0 : 1);
+	dui.samples->setValue(opt.samples);
+	dui.seed->setValue(opt.seed);
+	dui.smooth->setChecked(opt.smooth);
+	dui.solidR->setValue(opt.solidR);
+	dui.solidG->setValue(opt.solidG);
+	dui.solidB->setValue(opt.solidB);
+	dui.trap->setCurrentIndex(opt.trap - 1);
 	if (dialog->exec() == QDialog::Accepted) {
-		if (typeid(T) == typeid(Ui_Iters)) {
-			opt.iters = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
-		} else if (typeid(T) == typeid(Ui_Bail)) {
-			opt.bail = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
-		} else if (typeid(T) == typeid(Ui_Seed)) {
-			opt.seed = dynamic_cast<QSpinBox*>(dialog->children().at(2))->value();
-		}
+		opt.bail = dui.bail->value();
+		opt.fill = dui.fill->isChecked();
+		opt.fillR = dui.fillR->value();
+		opt.fillG = dui.fillG->value();
+		opt.fillB = dui.fillB->value();
+		opt.iters = dui.iters->value();
+		opt.layers = dui.layers->currentIndex() ? 3 : 1;
+		opt.samples = dui.samples->value();
+		opt.seed = dui.seed->value();
+		opt.smooth = dui.smooth->isChecked();
+		opt.solidR = dui.solidR->value();
+		opt.solidG = dui.solidG->value();
+		opt.solidB = dui.solidB->value();
+		opt.trap = dui.trap->currentIndex() + 1;
 		run(ui->algs->checkedAction());
 	}
 	delete dialog;

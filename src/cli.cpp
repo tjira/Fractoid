@@ -8,7 +8,8 @@ void execute(const argparse::ArgumentParser& program) {
 	if (int(program.is_used("--solid")) + int(program.is_used("--orbitrap")) + int(program.is_used("--density")) > 1) {
 		throw std::runtime_error("Can't use two algorithms at the same time.");
 	} else if (program.is_used("--solid")) {
-		alg = Algorithm::solid(program.get<std::vector<unsigned char>>("--solid"));
+		auto color = program.get<std::vector<unsigned char>>("--solid");
+		alg = Algorithm::solid(color[0], color[1], color[2]);
 	} else if (program.is_used("--orbitrap")) {
 		alg = Algorithm::orbitrap(program.get<int>("--orbitrap"), program.get<int>("--seed"));
 	} else if (program.is_used("--density")) {

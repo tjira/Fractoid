@@ -32,10 +32,10 @@ Algorithm Algorithm::orbitrap(int trap, int seed) {
 	};
 }
 
-Algorithm Algorithm::solid(const std::vector<unsigned char> &outside) {
+Algorithm Algorithm::solid(unsigned char r, unsigned char g, unsigned char b) {
 	return Algorithm{
 		.alg = 1,
-		.out = outside,
+		.out = {r, g, b},
 	};
 }
 

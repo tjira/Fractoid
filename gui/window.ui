@@ -173,33 +173,51 @@
     </widget>
     <addaction name="formula"/>
     <addaction name="alg"/>
-   </widget>
-   <widget class="QMenu" name="calc">
-    <property name="title">
-     <string>Calculation</string>
-    </property>
-    <action name="iters">
-     <property name="text">
-      <string>Iterations</string>
-     </property>
-    </action>
-    <action name="bail">
-     <property name="text">
-      <string>Bailout</string>
-     </property>
-    </action>
-    <addaction name="iters"/>
-    <addaction name="bail"/>
     <addaction name="separator"/>
-    <addaction name="seed"/>
+    <addaction name="preferences"/>
    </widget>
    <addaction name="file"/>
    <addaction name="fractal"/>
-   <addaction name="calc"/>
   </widget>
   <action name="seed">
    <property name="text">
     <string>Seed</string>
+   </property>
+  </action>
+  <action name="fill">
+   <property name="text">
+    <string>Fill</string>
+   </property>
+  </action>
+  <action name="smooth">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Smooth</string>
+   </property>
+  </action>
+  <action name="trap">
+   <property name="text">
+    <string>Trap</string>
+   </property>
+  </action>
+  <action name="layers">
+   <property name="text">
+    <string>Layers</string>
+   </property>
+  </action>
+  <action name="samples">
+   <property name="text">
+    <string>Samples</string>
+   </property>
+  </action>
+  <action name="preferences">
+   <property name="text">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>

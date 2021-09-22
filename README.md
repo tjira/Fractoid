@@ -31,8 +31,7 @@ color will be determined based on the number of iteration before bail in the fra
 ```c++
 alg.color(0, 0, 0);
 ```
-Now it's time to paint the fractal in the `Image` object. We need to specify the center, zoom, alg and
-resolution.
+Now it's time to paint the fractal in the `Image` object. We need to specify the center, zoom, algorithm and resolution.
 ```c++
 Image image = fractal.paint(-0.75, 0, 1, alg, 1920, 1080);
 ```
