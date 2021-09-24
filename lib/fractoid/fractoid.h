@@ -8,16 +8,17 @@
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
 
 struct Algorithm {
-	static Algorithm density(int channels, int samples, int seed = 1);
-	static Algorithm periodic(bool smooth, int seed = 1);
-	static Algorithm orbitrap(int trap, int seed = 1);
-	static Algorithm solid(unsigned char r, unsigned char g, unsigned char b);
-	void color(unsigned char r, unsigned char g, unsigned char b);
-	int alg; bool fill, smooth; int trap, layers, samples, seed;
-	std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> rnd;
+	static Algorithm density(int channels, int samples);
+	static Algorithm eta(bool smooth);
+	static Algorithm orbitrap(int trap);
+	int alg; bool smooth; int trap, layers, samples;
+};
 
-private:
-	static std::vector<double> randomize(int seed);
+struct Color {
+	static Color periodic(const std::vector<double> &params);
+	static Color solid(unsigned char r, unsigned char g, unsigned char b);
+	void inside(unsigned char r, unsigned char g, unsigned char b);
+	bool fill; int inmode = 2, outmode; std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> params;
 };
 
 class Image {
@@ -41,7 +42,7 @@ template<class F>
 class Complex {
 public:
 	[[nodiscard]] F copy(int itersIn, int bailoutIn) const;
-	[[nodiscard]] Image paint(double cRe, double cIm, double z, const Algorithm &alg, int w=1920, int h=1080) const;
+	[[nodiscard]] Image paint(double cRe, double cIm, double z, const Algorithm &alg, const Color &col, int w=1920, int h=1080) const;
 	virtual void params(double CReIn, double CImIn);
 
 protected:
@@ -50,7 +51,7 @@ protected:
 
 private:
 	void density(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const;
-	void normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const;
+	void normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg, const Color &col) const;
 	virtual double dist(double pRe, double pIm, double &zMag, int trap) const;
 	virtual int eta(double pRe, double pIm, double &zMag) const;
 	[[nodiscard]] virtual std::vector<std::vector<double>> orbit(double pRe, double pIm, double &zMag) const;

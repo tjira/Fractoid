@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <chrono>
 #include <random>
 #include "../fractoid.h"
 
@@ -15,7 +16,7 @@ F Complex<F>::copy(int itersIn, int bailoutIn) const {
 
 template<class F>
 void Complex<F>::density(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const {
-	std::mt19937 mt(alg.seed);
+	std::mt19937 mt(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 	std::uniform_real_distribution<double> rRe(cRe - 1.5 * img.ratio, cRe + 1.5 * img.ratio);
 	std::uniform_real_distribution<double> rIm(-cIm - 1.5, -cIm + 1.5);
 	for (int layer = 0; layer < alg.layers; layer++) {
@@ -39,33 +40,32 @@ void Complex<F>::density(Image &img, double cRe, double cIm, double z, const Alg
 }
 
 template<class F>
-void Complex<F>::normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg) const {
+void Complex<F>::normal(Image &img, double cRe, double cIm, double z, const Algorithm &alg, const Color &col) const {
 	double scale = 1.0 / z / img.h;
-	#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, scale)
+	#pragma omp parallel for default(none) shared(img, cRe, cIm, z, alg, col, scale)
 	for (int i = 0; i < img.h; i++) {
 		for (int j = 0; j < img.w; j++) {
 			double pRe = cRe - (1.5 * img.w - 3 * j) * scale;
 			double pIm = -cIm - (1.5 * img.h - 3 * i) * scale;
-			double zMag; double val = alg.alg == 3 ? dist(pRe, pIm, zMag, alg.trap) : eta(pRe, pIm, zMag);
-			unsigned char r = alg.in[0], g = alg.in[1], b = alg.in[2];
-			if (zMag > bail * bail || !alg.fill) {
-				switch (alg.alg) {
+			double zMag; double val = alg.alg == 2 ? dist(pRe, pIm, zMag, alg.trap) : eta(pRe, pIm, zMag);
+			unsigned char r = col.in[0], g = col.in[1], b = col.in[2];
+			if (zMag > bail * bail || !col.fill) {
+				switch (col.outmode) {
 					case 1: solid:
-						r = alg.out[0];
-						g = alg.out[1];
-						b = alg.out[2];
+						r = col.out[0];
+						g = col.out[1];
+						b = col.out[2];
 						break;
-					case 2: trig:
-						if (alg.smooth && zMag > bail * bail) {
+					case 2:
+						if (alg.alg == 1) {if (alg.smooth && zMag > bail * bail) {
 							val += 1.44269504f * log(2.0 * log(bail) / log(zMag));
+						}} else if (alg.alg == 2) {
+							val = log(ABS((val)));
 						}
-						r = (unsigned char) ((sin(alg.rnd[0] * val + alg.rnd[1]) + 1) * 127.5);
-						g = (unsigned char) ((sin(alg.rnd[2] * val + alg.rnd[3]) + 1) * 127.5);
-						b = (unsigned char) ((sin(alg.rnd[3] * val + alg.rnd[5]) + 1) * 127.5);
+						r = (unsigned char) ((sin(col.params[0] * val + col.params[1]) + 1) * 127.5);
+						g = (unsigned char) ((sin(col.params[2] * val + col.params[3]) + 1) * 127.5);
+						b = (unsigned char) ((sin(col.params[4] * val + col.params[5]) + 1) * 127.5);
 						break;
-					case 3:
-						val = log(ABS((val)));
-						goto trig;
 					default:
 						goto solid;
 				}
@@ -76,12 +76,12 @@ void Complex<F>::normal(Image &img, double cRe, double cIm, double z, const Algo
 }
 
 template<class F>
-Image Complex<F>::paint(double cRe, double cIm, double z, const Algorithm &alg, int w, int h) const {
+Image Complex<F>::paint(double cRe, double cIm, double z, const Algorithm &alg, const Color &col, int w, int h) const {
 	Image image(w, h);
-	if (alg.alg == 1 || alg.alg == 2 || alg.alg == 3) {
-		normal(image, cRe, cIm, z, alg);
+	if (alg.alg == 1 || alg.alg == 2) {
+		normal(image, cRe, cIm, z, alg, col);
 	}
-	else if (alg.alg == 4) {
+	else if (alg.alg == 3) {
 		image.fill(0, 0, 0);
 		density(image, cRe, cIm, z, alg);
 	}
@@ -113,8 +113,8 @@ template Complex<Mandelbrot>::Complex(int, int);
 template Complex<Manowar>::Complex(int, int);
 template Complex<Phoenix>::Complex(int, int);
 
-template Image Complex<BurningShip>::paint(double, double, double, Algorithm const&, int, int) const;
-template Image Complex<Julia>::paint(double, double, double, Algorithm const&, int, int) const;
-template Image Complex<Mandelbrot>::paint(double, double, double, Algorithm const&, int, int) const;
-template Image Complex<Manowar>::paint(double, double, double, Algorithm const&, int, int) const;
-template Image Complex<Phoenix>::paint(double, double, double, Algorithm const&, int, int) const;
+template Image Complex<BurningShip>::paint(double, double, double, Algorithm const&, Color const&, int, int) const;
+template Image Complex<Julia>::paint(double, double, double, Algorithm const&, Color const&, int, int) const;
+template Image Complex<Mandelbrot>::paint(double, double, double, Algorithm const&, Color const&, int, int) const;
+template Image Complex<Manowar>::paint(double, double, double, Algorithm const&, Color const&, int, int) const;
+template Image Complex<Phoenix>::paint(double, double, double, Algorithm const&, Color const&, int, int) const;

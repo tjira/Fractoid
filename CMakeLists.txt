@@ -18,6 +18,7 @@ endif()
 add_library(fractoid
 	lib/fractoid/src/algorithm.cpp
 	lib/fractoid/src/burningship.cpp
+	lib/fractoid/src/color.cpp
 	lib/fractoid/src/complex.cpp
 	lib/fractoid/src/image.cpp
 	lib/fractoid/src/julia.cpp
@@ -32,6 +33,9 @@ target_link_libraries(fractoid-cli fractoid)
 
 find_package(Qt5Widgets QUIET)
 if(Qt5Widgets_FOUND)
+	if(NOT OpenMP_CXX_FOUND)
+		set(CMAKE_CXX_FLAGS -pthread)
+	endif()
 	add_executable(
 		fractoid-gui
 		src/gui.cpp

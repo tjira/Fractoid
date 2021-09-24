@@ -130,15 +130,7 @@
       <string>Algorithm</string>
      </property>
      <actiongroup name="algs">
-      <action name="solid">
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Solid</string>
-       </property>
-      </action>
-      <action name="periodic">
+      <action name="eta">
        <property name="checkable">
         <bool>true</bool>
        </property>
@@ -146,7 +138,7 @@
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Periodic</string>
+        <string>ETA</string>
        </property>
       </action>
       <action name="orbitrap">
@@ -166,13 +158,20 @@
        </property>
       </action>
      </actiongroup>
-     <addaction name="solid"/>
-     <addaction name="periodic"/>
+     <addaction name="eta"/>
      <addaction name="orbitrap"/>
      <addaction name="density"/>
     </widget>
+    <widget class="QMenu" name="outmode">
+     <property name="title">
+      <string>Coloring</string>
+     </property>
+     <addaction name="periodic"/>
+     <addaction name="solid"/>
+    </widget>
     <addaction name="formula"/>
     <addaction name="alg"/>
+    <addaction name="outmode"/>
     <addaction name="separator"/>
     <addaction name="preferences"/>
    </widget>
@@ -220,6 +219,27 @@
     <string>Preferences</string>
    </property>
   </action>
+  <actiongroup name="cols">
+   <action name="periodic">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Periodic</string>
+    </property>
+   </action>
+   <action name="solid">
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string>Solid</string>
+    </property>
+   </action>
+  </actiongroup>
  </widget>
  <resources/>
  <connections/>

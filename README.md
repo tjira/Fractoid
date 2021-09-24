@@ -22,18 +22,24 @@ To create a fractal object, simply call the class constructor with the required 
 Mandelbrot fractal(50, 10);
 ```
 After initialization of the fractal object, we need to create an `Algorithm` object, which will hold a specified method
-of generation. For demonstration purposes, we can use smoothed periodic coloring with an example seed of 34.
+of generation. For demonstration purposes, we can use smoothed escape time algorithm.
 ```c++
-Algorithm alg = Algorithm::periodic(true, 34);
+Algorithm alg = Algorithm::eta(true);
 ```
-For the fractal to have a black filling, we need to specify the fill color. If you don't specify the fill color, the
-color will be determined based on the number of iteration before bail in the fractal.
+Next, we need a `Color` object. The simple and pretty coloring is periodic coloring. Periodic
+coloring needs 6 parameters. You can learn what they represent in the documentation. It is best to set all
+those parameters between 0 and 1.
 ```c++
-alg.color(0, 0, 0);
+Color col = Color::periodic({0.4, 0.2, 0.3, 0.1, 0.2, 1.1});
 ```
-Now it's time to paint the fractal in the `Image` object. We need to specify the center, zoom, algorithm and resolution.
+If we want the fractal to have black filling, we need to set it.
 ```c++
-Image image = fractal.paint(-0.75, 0, 1, alg, 1920, 1080);
+col.inside(0, 0, 0);
+```
+Now it's time to paint the fractal to the `Image` object. We need to specify the center, zoom, algorithm, color
+and resolution.
+```c++
+Image image = fractal.paint(-0.75, 0, 1, alg, col, 1920, 1080);
 ```
 We can then save the image into a `.png` file.
 ```c++
@@ -48,5 +54,5 @@ If you followed these steps carefully, the following image will be generated.
 The usage of the CLI is pretty straightforward. To see all the available options simply run the `fractoid-cli`
 executable without any arguments. To replicate the image above, run the following command.
 ```shell
-./fractoid-cli mandelbrot -b 10 -f 0 0 0 -i 50 -l -0.75 0 -s 34 --smooth
+./fractoid-cli mandelbrot -b 10 -f 0 0 0 -i 50 -l -0.75 0 --smooth
 ```

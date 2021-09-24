@@ -4,20 +4,22 @@
 
 template<typename F>
 void execute(const argparse::ArgumentParser& program) {
-	Algorithm alg = Algorithm::periodic(program.get<bool>("--smooth"), program.get<int>("--seed"));
-	if (int(program.is_used("--solid")) + int(program.is_used("--orbitrap")) + int(program.is_used("--density")) > 1) {
+	Algorithm alg = Algorithm::eta(program.get<bool>("--smooth"));
+	Color col = Color::periodic({0.4, 0.2, 0.3, 0.1, 0.2, 1.1});
+	if (int(program.is_used("--orbitrap")) + int(program.is_used("--density")) > 1) {
 		throw std::runtime_error("Can't use two algorithms at the same time.");
-	} else if (program.is_used("--solid")) {
-		auto color = program.get<std::vector<unsigned char>>("--solid");
-		alg = Algorithm::solid(color[0], color[1], color[2]);
 	} else if (program.is_used("--orbitrap")) {
-		alg = Algorithm::orbitrap(program.get<int>("--orbitrap"), program.get<int>("--seed"));
+		alg = Algorithm::orbitrap(program.get<int>("--orbitrap"));
 	} else if (program.is_used("--density")) {
-		alg = Algorithm::density(program.get<int>("--density"), program.get<int>("--samples"), program.get<int>("--seed"));
+		alg = Algorithm::density(program.get<int>("--density"), program.get<int>("--samples"));
+	}
+	if (program.is_used("--solid")) {
+		auto color = program.get<std::vector<unsigned char>>("--solid");
+		col = Color::solid(color[0], color[1], color[2]);
 	}
 	if (program.is_used("--fill")) {
 		auto color = program.get<std::vector<unsigned char>>("--fill");
-		alg.color(color[0], color[1], color[2]);
+		col.inside(color[0], color[1], color[2]);
 	}
 	F fractal(
 		program.get<int>("--iters"),
@@ -35,7 +37,7 @@ void execute(const argparse::ArgumentParser& program) {
 	Image image = fractal.paint(
 		program.get<std::vector<double>>("--location")[0],
 		program.get<std::vector<double>>("--location")[1],
-		program.get<double>("--zoom"), alg,
+		program.get<double>("--zoom"), alg, col,
 		program.get<std::vector<int>>("--resolution")[0],
 		program.get<std::vector<int>>("--resolution")[1]
 	);
@@ -55,7 +57,6 @@ int main(int argc, char *argv[]) {
 	program.add_argument("-l", "--location").help("real and imaginary part of location location").default_value(std::vector<double>{0.0, 0.0}).action([](const std::string& value) { return std::stod(value); }).nargs(2);
 	program.add_argument("-o", "--output").help("output filename").default_value(std::string("fractal.png"));
 	program.add_argument("-r", "--resolution").help("resolution of the image").default_value(std::vector<int>{1920, 1080}).action([](const std::string &value) { return std::stoi(value); }).nargs(2);
-	program.add_argument("-s", "--seed").help("RNG seed").default_value(34).action([](const std::string &value) { return std::stoi(value); });
 	program.add_argument("-z", "--zoom").help("fractal zoom").default_value(1.0).action([](const std::string &value) { return std::stod(value); });
 	program.add_argument("--smooth").help("smoothing").default_value(false).implicit_value(true);
 	program.add_argument("--solid").help("solid alg").action([](const std::string& value) { return (unsigned char) std::stoi(value); }).nargs(3);
