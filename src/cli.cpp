@@ -21,10 +21,7 @@ void execute(const argparse::ArgumentParser& program) {
 		auto color = program.get<std::vector<unsigned char>>("--fill");
 		col.inside(color[0], color[1], color[2]);
 	}
-	F fractal(
-		program.get<int>("--iters"),
-		program.get<int>("--bailout")
-	);
+	F fractal(program.get<int>("--iters"), program.get<int>("--bailout"));
 	if (typeid(F) == typeid(Julia)) {
 		auto params = program.get<std::vector<double>>("--julia");
 		fractal.params(params[0], params[1]);

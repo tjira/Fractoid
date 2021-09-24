@@ -39,6 +39,8 @@ if(Qt5Widgets_FOUND)
 	add_executable(
 		fractoid-gui
 		src/gui.cpp
+		inc/canvas.h
+			src/canvas.cpp
 		inc/window.h
 		src/window.cpp
 	)

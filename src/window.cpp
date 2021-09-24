@@ -4,10 +4,11 @@ Window::Window(QWidget *parent) : QMainWindow(parent), ui(new Ui::Window), worke
 	ui->setupUi(this); setFixedSize(opt.w, opt.h + ui->menu->sizeHint().height());
 	connect(ui->algs, &QActionGroup::triggered, this, &Window::run);
 	connect(ui->cols, &QActionGroup::triggered, this, &Window::run);
-	connect(ui->formulas, &QActionGroup::triggered, this, &Window::run);
+	connect(ui->formulas, &QActionGroup::triggered, this, &Window::reset);
 	connect(ui->preferences, &QAction::triggered, this, &Window::preferences);
 	connect(ui->quit, &QAction::triggered, this, &QApplication::quit);
-	ui->formulas->triggered(ui->cols->checkedAction());
+	connect(ui->image, &Canvas::doubleClicked, this, &Window::zoom);
+	run();
 }
 
 Window::~Window() {
@@ -38,22 +39,11 @@ void Window::run() {
 		opt.col = Color::solid(opt.solidR, opt.solidG, opt.solidB);
 	}
 	if (opt.fill) opt.col.inside(opt.fillR, opt.fillG, opt.fillB);
-	if (ui->formulas->checkedAction()->text() == "Burning Ship") {
-		opt.cRe = -0.45, opt.cIm = 0.55, opt.z = 1.05;
-		paint<BurningShip>();
-	} else if (ui->formulas->checkedAction()->text() == "Julia") {
-		opt.cRe = 0, opt.cIm = 0, opt.z = 1.1;
-		paint<Julia>();
-	} else if (ui->formulas->checkedAction()->text() == "Mandelbrot") {
-		opt.cRe = -0.75, opt.cIm = 0, opt.z = 1.2;
-		paint<Mandelbrot>();
-	} else if (ui->formulas->checkedAction()->text() == "Manowar") {
-		opt.cRe = -0.5, opt.cIm = 0, opt.z = 1.3;
-		paint<Manowar>();
-	} else if (ui->formulas->checkedAction()->text() == "Phoenix") {
-		opt.cRe = 0, opt.cIm = 0, opt.z = 1.4;
-		paint<Phoenix>();
-	}
+	if (ui->formulas->checkedAction()->text() == "Burning Ship") paint<BurningShip>();
+	else if (ui->formulas->checkedAction()->text() == "Julia") paint<Julia>();
+	else if (ui->formulas->checkedAction()->text() == "Mandelbrot") paint<Mandelbrot>();
+	else if (ui->formulas->checkedAction()->text() == "Manowar") paint<Manowar>();
+	else if (ui->formulas->checkedAction()->text() == "Phoenix") paint<Phoenix>();
 }
 
 void Window::preferences() {
@@ -101,4 +91,26 @@ void Window::preferences() {
 		run();
 	}
 	delete dialog;
+}
+
+void Window::reset() {
+	if (ui->formulas->checkedAction()->text() == "Burning Ship") {
+		opt.cRe = -0.45, opt.cIm = 0.55, opt.z = 1.05;
+	} else if (ui->formulas->checkedAction()->text() == "Julia") {
+		opt.cRe = 0, opt.cIm = 0, opt.z = 1.1;
+	} else if (ui->formulas->checkedAction()->text() == "Mandelbrot") {
+		opt.cRe = -0.75, opt.cIm = 0, opt.z = 1.2;
+	} else if (ui->formulas->checkedAction()->text() == "Manowar") {
+		opt.cRe = -0.5, opt.cIm = 0, opt.z = 1.3;
+	} else if (ui->formulas->checkedAction()->text() == "Phoenix") {
+		opt.cRe = 0, opt.cIm = 0, opt.z = 1.4;
+	}
+	run();
+}
+
+void Window::zoom(const QPoint &p, Qt::MouseButton button) {
+	opt.cRe -= (1.5 * opt.w - 3 * p.x()) / opt.z / opt.h;
+	opt.cIm += (1.5 * opt.h - 3 * p.y()) / opt.z / opt.h;
+	opt.z *= button == Qt::LeftButton ? 1.1 : 1 / 1.1;
+	run();
 }

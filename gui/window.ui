@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Fractoid</string>
   </property>
-  <widget class="QLabel" name="image"/>
+  <widget class="Canvas" name="image"/>
   <widget class="QMenuBar" name="menu">
    <property name="geometry">
     <rect>
@@ -162,7 +162,7 @@
      <addaction name="orbitrap"/>
      <addaction name="density"/>
     </widget>
-    <widget class="QMenu" name="outmode">
+    <widget class="QMenu" name="col">
      <property name="title">
       <string>Coloring</string>
      </property>
@@ -171,7 +171,7 @@
     </widget>
     <addaction name="formula"/>
     <addaction name="alg"/>
-    <addaction name="outmode"/>
+    <addaction name="col"/>
     <addaction name="separator"/>
     <addaction name="preferences"/>
    </widget>
@@ -241,6 +241,13 @@
    </action>
   </actiongroup>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Canvas</class>
+   <extends>QLabel</extends>
+   <header>../../../../inc/canvas.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

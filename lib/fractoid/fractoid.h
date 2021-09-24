@@ -18,7 +18,7 @@ struct Color {
 	static Color periodic(const std::vector<double> &params);
 	static Color solid(unsigned char r, unsigned char g, unsigned char b);
 	void inside(unsigned char r, unsigned char g, unsigned char b);
-	bool fill; int inmode = 2, outmode; std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> params;
+	bool fill; int outmode; std::vector<unsigned char> in = {0, 0, 0}, out; std::vector<double> params;
 };
 
 class Image {
@@ -42,7 +42,7 @@ template<class F>
 class Complex {
 public:
 	[[nodiscard]] F copy(int itersIn, int bailoutIn) const;
-	[[nodiscard]] Image paint(double cRe, double cIm, double z, const Algorithm &alg, const Color &col, int w=1920, int h=1080) const;
+	[[nodiscard]] Image paint(double cRe, double cIm, double z, const Algorithm &alg, const Color &col, int w = 1920, int h = 1080) const;
 	virtual void params(double CReIn, double CImIn);
 
 protected:

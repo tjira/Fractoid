@@ -1,12 +1,11 @@
 #pragma once
 
-#include <QDialog>
 #include <QDebug>
-#include <QLabel>
 #include <QMainWindow>
 #include <QThread>
 #include "ui_preferences.h"
 #include "ui_window.h"
+#include "canvas.h"
 #include "../lib/fractoid/fractoid.h"
 
 namespace Ui {
@@ -36,4 +35,6 @@ private:
 public slots:
 	void run();
 	void preferences();
+	void reset();
+	void zoom(const QPoint &p, Qt::MouseButton button);
 };
